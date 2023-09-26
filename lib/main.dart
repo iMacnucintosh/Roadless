@@ -53,19 +53,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -90,16 +77,73 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
               TileLayer(
                 urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                // urlTemplate: 'https://stamen-tiles.a.ssl.fastly.net/toner-background/{z}/{x}/{y}.png',
+                // urlTemplate: 'https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png',
                 userAgentPackageName: 'com.example.app',
+              ),
+              PolygonLayer(
+                polygonCulling: false,
+                polygons: [
+                  Polygon(
+                      points: [
+                        LatLng(36.95, -9.5),
+                        LatLng(42.25, -9.5),
+                        LatLng(42.25, -6.2),
+                        LatLng(36.95, -6.2),
+                      ],
+                      color: Colors.blue.withOpacity(0.2),
+                      borderStrokeWidth: 1,
+                      borderColor: Colors.blue,
+                      isFilled: true),
+                ],
+              ),
+              PolylineLayer(
+                polylines: [
+                  Polyline(
+                    points: [
+                      LatLng(38.73, -9.14), // Lisbon, Portugal
+                      LatLng(51.50, -0.12), // London, United Kingdom
+                      LatLng(52.37, 4.90), // Amsterdam, Netherlands
+                    ],
+                    color: Colors.green,
+                    strokeWidth: 2,
+                  ),
+                ],
+              ),
+              CircleLayer(
+                circles: [
+                  CircleMarker(
+                    point: LatLng(52.2677, 5.1689), // center of 't Gooi
+                    radius: 5000,
+                    useRadiusInMeter: true,
+                    color: Colors.red.withOpacity(0.3),
+                    borderColor: Colors.red.withOpacity(0.7),
+                    borderStrokeWidth: 2,
+                  )
+                ],
+              ),
+              MarkerLayer(
+                markers: [
+                  Marker(
+                    point: LatLng(51.509364, -0.128928),
+                    width: 80,
+                    height: 80,
+                    builder: (context) => const Icon(
+                      Icons.location_on_outlined,
+                      color: Colors.pink,
+                      size: 50,
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+      floatingActionButton: const FloatingActionButton(
+        onPressed: null,
+        tooltip: 'Locate',
+        child: Icon(Icons.my_location_rounded),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
