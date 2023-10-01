@@ -76,10 +76,22 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             children: [
               TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                // urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', // OpenStreetMap
                 // urlTemplate: 'https://stamen-tiles.a.ssl.fastly.net/toner-background/{z}/{x}/{y}.png',
                 // urlTemplate: 'https://stamen-tiles.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.example.app',
+
+                urlTemplate: 'https://tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=c1522771387c4170a55beb3ecaaabf61', // OpenCycleMap
+                // urlTemplate: 'https://tile.thunderforest.com/transport/{z}/{x}/{y}.png?apikey=c1522771387c4170a55beb3ecaaabf61', // Transport
+                // urlTemplate: 'https://tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey=c1522771387c4170a55beb3ecaaabf61', // Landscape
+                // urlTemplate: 'https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=c1522771387c4170a55beb3ecaaabf61', // Outdoors
+                // urlTemplate: 'https://tile.thunderforest.com/transport-dark//{z}/{x}/{y}.png?apikey=c1522771387c4170a55beb3ecaaabf61', // Transport-dark
+                // urlTemplate: 'https://tile.thunderforest.com/spinal-map/{z}/{x}/{y}.png?apikey=c1522771387c4170a55beb3ecaaabf61', // Spinal-map
+                // urlTemplate: 'https://tile.thunderforest.com/pioneer/{z}/{x}/{y}.png?apikey=c1522771387c4170a55beb3ecaaabf61', // Pioneer
+                // urlTemplate: 'https://tile.thunderforest.com/mobile-atlas/{z}/{x}/{y}.png?apikey=c1522771387c4170a55beb3ecaaabf61', // Mobile-atlas
+                // urlTemplate: 'https://tile.thunderforest.com/neighbourhood/{z}/{x}/{y}.png?apikey=c1522771387c4170a55beb3ecaaabf61', // Neighbourhood
+                // urlTemplate: 'https://tile.thunderforest.com/atlas/{z}/{x}/{y}.png?apikey=c1522771387c4170a55beb3ecaaabf61', // Atlas
+
+                // userAgentPackageName: 'com.example.app',
               ),
               PolygonLayer(
                 polygonCulling: false,
