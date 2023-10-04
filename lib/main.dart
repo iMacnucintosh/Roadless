@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:roadless/components/loading_spinner.dart';
 import 'package:roadless/providers/my_tile_provider.dart';
 
 import 'constants/map_providers.dart';
@@ -60,6 +61,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<Polyline> trackPoints = List.empty();
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -161,6 +163,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ],
           ),
+          isLoading ? const LoadingSpinner() : Container()
         ],
       ),
       floatingActionButton: Wrap(
@@ -169,7 +172,12 @@ class _MyHomePageState extends State<MyHomePage> {
         children: [
           FloatingActionButton(
             onPressed: () async {
-              List<LatLng> points = await loadTrack(mapController);
+              setState(
+                () {
+                  isLoading = true;
+                },
+              );
+              List<LatLng> points = await loadTrack(mapController, true);
               if (points.isNotEmpty) {
                 setState(
                   () {
@@ -180,6 +188,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         strokeWidth: 3,
                       ),
                     ];
+                    isLoading = false;
                   },
                 );
               }
@@ -190,14 +199,15 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           FloatingActionButton(
             onPressed: () {
-              List<double> tl = getXY(mapController);
-              List<double> bl = getXY(mapController);
-              List<double> tr = getXY(mapController);
-              List<double> br = getXY(mapController);
-              print(tl.toString());
-              print(bl.toString());
-              print(tr.toString());
-              print(br.toString());
+              int zoomLevel = mapController.zoom.toInt();
+              List<int> tl = getXY(mapController.zoom.toInt(), mapController.center);
+              // List<double> bl = getXY(mapController);
+              // List<double> tr = getXY(mapController);
+              // List<double> br = getXY(mapController);
+              // print(tl.toString());
+              // print(bl.toString());
+              // print(tr.toString());
+              // print(br.toString());
             },
             tooltip: 'Locate',
             child: const Icon(Icons.my_location_rounded),
