@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -65,10 +68,23 @@ class _MyHomePageState extends State<MyHomePage> {
     // than having to individually change instances of widgets.
 
     String mapProviderUrl = mapProviderUrls["OpenStreetMap"]!;
+    MapController mapController = MapController();
 
     final myTileProvider = MyTileProvider(
       baseUrl: mapProviderUrl,
     );
+
+    List<double> getXY(LatLng latLong) {
+      num n = pow(2, mapController.zoom.toInt());
+      double xtile = n * ((mapController.center.longitude + 180) / 360);
+      double ytile = n *
+          (1 -
+              (log(tan(mapController.center.latitudeInRad) +
+                      acos(mapController.center.latitudeInRad)) /
+                  pi)) /
+          2;
+      return [xtile.toInt().toDouble(), ytile.toInt().toDouble()];
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -79,14 +95,36 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Stack(
         children: [
           FlutterMap(
-            options: MapOptions(center: LatLng(51.509364, -0.128928), zoom: 3.2, maxZoom: 18),
+            options: MapOptions(
+              center: LatLng(51.509364, -0.128928),
+              zoom: 3.2,
+              minZoom: 0,
+              maxZoom: 18,
+              onTap: (TapPosition tapPosition, LatLng latLng) {
+                num n = pow(2, mapController.zoom.toInt());
+                double xtile = n * ((mapController.center.longitude + 180) / 360);
+                double ytile = n *
+                    (1 -
+                        (log(tan(mapController.center.latitudeInRad) +
+                                acos(mapController.center.latitudeInRad)) /
+                            pi)) /
+                    2;
+                try {
+                  CachedNetworkImageProvider(
+                      "https://tile.openstreetmap.org/${mapController.zoom.toInt()}/$xtile/$ytile.png");
+                } on Exception catch (e) {
+                  print(e);
+                }
+              },
+            ),
+            mapController: mapController,
             children: [
               TileLayer(
                 urlTemplate: '$mapProviderUrl/{z}/{x}/{y}.png',
                 tileProvider: myTileProvider,
               ),
               PolygonLayer(
-                polygonCulling: false,
+                polygonCulling: true,
                 polygons: [
                   Polygon(
                       points: [
@@ -144,8 +182,17 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-      floatingActionButton: const FloatingActionButton(
-        onPressed: null,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          List<double> tl = getXY(mapController.bounds!.northWest);
+          List<double> bl = getXY(mapController.bounds!.southWest);
+          List<double> tr = getXY(mapController.bounds!.northEast);
+          List<double> br = getXY(mapController.bounds!.southEast);
+          print(tl.toString());
+          print(bl.toString());
+          print(tr.toString());
+          print(br.toString());
+        },
         tooltip: 'Locate',
         child: Icon(Icons.my_location_rounded),
       ), // This trailing comma makes auto-formatting nicer for build methods.

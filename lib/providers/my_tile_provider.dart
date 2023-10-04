@@ -18,12 +18,14 @@ class MyTileProvider extends TileProvider {
     // Construye la URL de la imagen de acuerdo a tu fuente personalizada.
     final tileUrl = '$baseUrl/$zoom/$x/$y.png'; // Reemplaza con tu lógica
 
+    print('$x/$y');
     return tileUrl;
   }
 
   @override
   ImageProvider getImage(TileCoordinates coordinates, TileLayer options) {
     final tileUrl = getTileUrl(coordinates, options);
-    return CachedNetworkImageProvider(tileUrl); // O usa una imagen en blanco o un azulejo de respaldo aquí
+    return CachedNetworkImageProvider(
+        tileUrl); // O usa una imagen en blanco o un azulejo de respaldo aquí
   }
 }
