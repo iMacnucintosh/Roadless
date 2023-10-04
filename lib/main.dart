@@ -1,17 +1,28 @@
+import 'dart:math';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+import 'package:roadless/providers/my_tile_provider.dart';
+
+import 'constants/map_providers.dart';
+import 'constants/utils.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  MyApp({super.key});
+
+  final mapController = MapController();
 
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Roadless',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -24,7 +35,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(title: 'Map Example'),
     );
   }
 }
@@ -48,18 +59,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+  List<Polyline> trackPoints = List.empty();
 
   @override
   Widget build(BuildContext context) {
@@ -69,46 +69,140 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
+
+    String mapProviderUrl = mapProviderUrls["OpenStreetMap"]!;
+    MapController mapController = MapController();
+
+    final myTileProvider = MyTileProvider(
+      baseUrl: mapProviderUrl,
+    );
+
     return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Invoke "debug painting" (press "p" in the console, choose the
-          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-          // to see the wireframe for each widget.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
+      // appBar: AppBar(
+      //   // Here we take the value from the MyHomePage object that was created by
+      //   // the App.build method, and use it to set our appbar title.
+      //   title: Text(widget.title),
+      // ),
+      body: Stack(
+        children: [
+          FlutterMap(
+            options: MapOptions(
+              center: LatLng(51.509364, -0.128928),
+              zoom: 3.2,
+              minZoom: 0,
+              maxZoom: 18,
+              onTap: (TapPosition tapPosition, LatLng latLng) {
+                num n = pow(2, mapController.zoom.toInt());
+                double xtile = n * ((mapController.center.longitude + 180) / 360);
+                double ytile = n *
+                    (1 -
+                        (log(tan(mapController.center.latitudeInRad) +
+                                acos(mapController.center.latitudeInRad)) /
+                            pi)) /
+                    2;
+                try {
+                  CachedNetworkImageProvider(
+                      "https://tile.openstreetmap.org/${mapController.zoom.toInt()}/$xtile/$ytile.png");
+                } on Exception catch (e) {
+                  print(e);
+                }
+              },
             ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
+            mapController: mapController,
+            children: [
+              TileLayer(
+                urlTemplate: '$mapProviderUrl/{z}/{x}/{y}.png',
+                tileProvider: myTileProvider,
+              ),
+              PolygonLayer(
+                polygonCulling: true,
+                polygons: [
+                  Polygon(
+                      points: [
+                        LatLng(36.95, -9.5),
+                        LatLng(42.25, -9.5),
+                        LatLng(42.25, -6.2),
+                        LatLng(36.95, -6.2),
+                      ],
+                      color: Colors.blue.withOpacity(0.2),
+                      borderStrokeWidth: 1,
+                      borderColor: Colors.blue,
+                      isFilled: true),
+                ],
+              ),
+              PolylineLayer(
+                polylines: trackPoints,
+              ),
+              CircleLayer(
+                circles: [
+                  CircleMarker(
+                    point: LatLng(52.2677, 5.1689), // center of 't Gooi
+                    radius: 5000,
+                    useRadiusInMeter: true,
+                    color: Colors.red.withOpacity(0.3),
+                    borderColor: Colors.red.withOpacity(0.7),
+                    borderStrokeWidth: 2,
+                  )
+                ],
+              ),
+              MarkerLayer(
+                markers: [
+                  Marker(
+                    point: LatLng(51.509364, -0.128928),
+                    width: 80,
+                    height: 80,
+                    builder: (context) => const Icon(
+                      Icons.location_on_outlined,
+                      color: Colors.pink,
+                      size: 50,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+      floatingActionButton: Wrap(
+        direction: Axis.vertical,
+        spacing: 10,
+        children: [
+          FloatingActionButton(
+            onPressed: () async {
+              List<LatLng> points = await loadTrack(mapController);
+              if (points.isNotEmpty) {
+                setState(
+                  () {
+                    trackPoints = [
+                      Polyline(
+                        points: points,
+                        color: Colors.blueAccent,
+                        strokeWidth: 3,
+                      ),
+                    ];
+                  },
+                );
+              }
+            },
+            tooltip: 'Import File',
+            backgroundColor: Colors.green,
+            child: const Icon(Icons.arrow_circle_down),
+          ),
+          FloatingActionButton(
+            onPressed: () {
+              List<double> tl = getXY(mapController);
+              List<double> bl = getXY(mapController);
+              List<double> tr = getXY(mapController);
+              List<double> br = getXY(mapController);
+              print(tl.toString());
+              print(bl.toString());
+              print(tr.toString());
+              print(br.toString());
+            },
+            tooltip: 'Locate',
+            child: const Icon(Icons.my_location_rounded),
+          ),
+        ],
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
