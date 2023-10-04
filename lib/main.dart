@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:roadless/providers/my_tile_provider.dart';
 
 import 'constants/map_providers.dart';
+import 'constants/utils.dart';
 
 void main() {
   runApp(MyApp());
@@ -58,6 +59,8 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  List<Polyline> trackPoints = List.empty();
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -74,24 +77,12 @@ class _MyHomePageState extends State<MyHomePage> {
       baseUrl: mapProviderUrl,
     );
 
-    List<double> getXY(LatLng latLong) {
-      num n = pow(2, mapController.zoom.toInt());
-      double xtile = n * ((mapController.center.longitude + 180) / 360);
-      double ytile = n *
-          (1 -
-              (log(tan(mapController.center.latitudeInRad) +
-                      acos(mapController.center.latitudeInRad)) /
-                  pi)) /
-          2;
-      return [xtile.toInt().toDouble(), ytile.toInt().toDouble()];
-    }
-
     return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
+      // appBar: AppBar(
+      //   // Here we take the value from the MyHomePage object that was created by
+      //   // the App.build method, and use it to set our appbar title.
+      //   title: Text(widget.title),
+      // ),
       body: Stack(
         children: [
           FlutterMap(
@@ -140,17 +131,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
               ),
               PolylineLayer(
-                polylines: [
-                  Polyline(
-                    points: [
-                      LatLng(38.73, -9.14), // Lisbon, Portugal
-                      LatLng(51.50, -0.12), // London, United Kingdom
-                      LatLng(52.37, 4.90), // Amsterdam, Netherlands
-                    ],
-                    color: Colors.green,
-                    strokeWidth: 2,
-                  ),
-                ],
+                polylines: trackPoints,
               ),
               CircleLayer(
                 circles: [
@@ -182,19 +163,46 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          List<double> tl = getXY(mapController.bounds!.northWest);
-          List<double> bl = getXY(mapController.bounds!.southWest);
-          List<double> tr = getXY(mapController.bounds!.northEast);
-          List<double> br = getXY(mapController.bounds!.southEast);
-          print(tl.toString());
-          print(bl.toString());
-          print(tr.toString());
-          print(br.toString());
-        },
-        tooltip: 'Locate',
-        child: Icon(Icons.my_location_rounded),
+      floatingActionButton: Wrap(
+        direction: Axis.vertical,
+        spacing: 10,
+        children: [
+          FloatingActionButton(
+            onPressed: () async {
+              List<LatLng> points = await loadTrack(mapController);
+              if (points.isNotEmpty) {
+                setState(
+                  () {
+                    trackPoints = [
+                      Polyline(
+                        points: points,
+                        color: Colors.blueAccent,
+                        strokeWidth: 3,
+                      ),
+                    ];
+                  },
+                );
+              }
+            },
+            tooltip: 'Import File',
+            backgroundColor: Colors.green,
+            child: const Icon(Icons.arrow_circle_down),
+          ),
+          FloatingActionButton(
+            onPressed: () {
+              List<double> tl = getXY(mapController);
+              List<double> bl = getXY(mapController);
+              List<double> tr = getXY(mapController);
+              List<double> br = getXY(mapController);
+              print(tl.toString());
+              print(bl.toString());
+              print(tr.toString());
+              print(br.toString());
+            },
+            tooltip: 'Locate',
+            child: const Icon(Icons.my_location_rounded),
+          ),
+        ],
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
