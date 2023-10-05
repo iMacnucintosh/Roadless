@@ -3,9 +3,12 @@ import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:roadless/components/loading_spinner.dart';
+import 'package:roadless/controllers/location_controller.dart';
 import 'package:roadless/providers/my_tile_provider.dart';
+import 'package:wakelock/wakelock.dart';
 
 import 'constants/map_providers.dart';
 import 'constants/utils.dart';
@@ -60,8 +63,31 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  MapController mapController = MapController();
+  LocationController locationController = LocationController();
+  LatLng initialMapPosition = const LatLng(41.645838, -4.730120);
+  LatLng currentPosition = const LatLng(41.645838, -4.730120);
+  double lastZoom = 16;
   List<Polyline> trackPoints = List.empty();
   bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    Wakelock.enable();
+    // Timer.periodic(const Duration(seconds: 2), (timer) async {
+    //   currentPosition = await locationController.getCurrentPosition();
+    //   mapController.move(currentPosition, lastZoom);
+    //   setState(() {
+    //     currentPosition = currentPosition;
+    //     print(currentPosition);
+    //   });
+    // });
+
+    mapController.mapEventStream.listen((event) {
+      lastZoom = event.zoom;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +99,6 @@ class _MyHomePageState extends State<MyHomePage> {
     // than having to individually change instances of widgets.
 
     String mapProviderUrl = mapProviderUrls["OpenStreetMap"]!;
-    MapController mapController = MapController();
 
     final myTileProvider = MyTileProvider(
       baseUrl: mapProviderUrl,
@@ -89,7 +114,7 @@ class _MyHomePageState extends State<MyHomePage> {
         children: [
           FlutterMap(
             options: MapOptions(
-              center: LatLng(51.509364, -0.128928),
+              center: initialMapPosition,
               zoom: 3.2,
               minZoom: 0,
               maxZoom: 18,
@@ -116,15 +141,16 @@ class _MyHomePageState extends State<MyHomePage> {
                 urlTemplate: '$mapProviderUrl/{z}/{x}/{y}.png',
                 tileProvider: myTileProvider,
               ),
+              CurrentLocationLayer(),
               PolygonLayer(
                 polygonCulling: true,
                 polygons: [
                   Polygon(
                       points: [
-                        LatLng(36.95, -9.5),
-                        LatLng(42.25, -9.5),
-                        LatLng(42.25, -6.2),
-                        LatLng(36.95, -6.2),
+                        const LatLng(36.95, -9.5),
+                        const LatLng(42.25, -9.5),
+                        const LatLng(42.25, -6.2),
+                        const LatLng(36.95, -6.2),
                       ],
                       color: Colors.blue.withOpacity(0.2),
                       borderStrokeWidth: 1,
@@ -138,7 +164,7 @@ class _MyHomePageState extends State<MyHomePage> {
               CircleLayer(
                 circles: [
                   CircleMarker(
-                    point: LatLng(52.2677, 5.1689), // center of 't Gooi
+                    point: const LatLng(52.2677, 5.1689), // center of 't Gooi
                     radius: 5000,
                     useRadiusInMeter: true,
                     color: Colors.red.withOpacity(0.3),
@@ -150,13 +176,11 @@ class _MyHomePageState extends State<MyHomePage> {
               MarkerLayer(
                 markers: [
                   Marker(
-                    point: LatLng(51.509364, -0.128928),
-                    width: 80,
-                    height: 80,
+                    point: currentPosition,
                     builder: (context) => const Icon(
-                      Icons.location_on_outlined,
-                      color: Colors.pink,
-                      size: 50,
+                      Icons.navigation,
+                      color: Colors.blue,
+                      // size: 50,
                     ),
                   ),
                 ],
@@ -198,16 +222,12 @@ class _MyHomePageState extends State<MyHomePage> {
             child: const Icon(Icons.arrow_circle_down),
           ),
           FloatingActionButton(
-            onPressed: () {
-              int zoomLevel = mapController.zoom.toInt();
-              List<int> tl = getXY(mapController.zoom.toInt(), mapController.center);
-              // List<double> bl = getXY(mapController);
-              // List<double> tr = getXY(mapController);
-              // List<double> br = getXY(mapController);
-              // print(tl.toString());
-              // print(bl.toString());
-              // print(tr.toString());
-              // print(br.toString());
+            onPressed: () async {
+              currentPosition = await locationController.getCurrentPosition();
+              mapController.move(currentPosition, 16);
+              setState(() {
+                currentPosition = currentPosition;
+              });
             },
             tooltip: 'Locate',
             child: const Icon(Icons.my_location_rounded),
