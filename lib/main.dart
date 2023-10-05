@@ -2,16 +2,17 @@ import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:roadless/components/loading_spinner.dart';
-import 'package:roadless/controllers/location_controller.dart';
+import 'package:roadless/controllers/track_controller.dart';
 import 'package:roadless/providers/my_tile_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wakelock/wakelock.dart';
 
 import 'constants/map_providers.dart';
-import 'constants/utils.dart';
 
 void main() {
   runApp(MyApp());
@@ -64,15 +65,20 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   MapController mapController = MapController();
-  LocationController locationController = LocationController();
+  TrackController trackController = TrackController();
+  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+
   LatLng initialMapPosition = const LatLng(41.645838, -4.730120);
   LatLng currentPosition = const LatLng(41.645838, -4.730120);
   double lastZoom = 16;
   List<Polyline> trackPoints = List.empty();
   bool isLoading = false;
+  late Future<String> lastTrack;
+  FollowOnLocationUpdate followLocation = FollowOnLocationUpdate.never;
+  TurnOnHeadingUpdate turnOnHeading = TurnOnHeadingUpdate.never;
 
   @override
-  void initState() {
+  initState() {
     super.initState();
     Wakelock.enable();
     // Timer.periodic(const Duration(seconds: 2), (timer) async {
@@ -83,6 +89,27 @@ class _MyHomePageState extends State<MyHomePage> {
     //     print(currentPosition);
     //   });
     // });
+
+    _prefs.then((SharedPreferences prefs) async {
+      String track = prefs.getString('last_track') ?? "";
+      if (track.isNotEmpty) {
+        List<LatLng> points = await trackController.loadTrackFromString(track);
+        if (points.isNotEmpty) {
+          setState(
+            () {
+              trackPoints = [
+                Polyline(
+                  points: points,
+                  color: Colors.blueAccent,
+                  strokeWidth: 3,
+                ),
+              ];
+              isLoading = false;
+            },
+          );
+        }
+      }
+    });
 
     mapController.mapEventStream.listen((event) {
       lastZoom = event.zoom;
@@ -115,7 +142,7 @@ class _MyHomePageState extends State<MyHomePage> {
           FlutterMap(
             options: MapOptions(
               center: initialMapPosition,
-              zoom: 3.2,
+              zoom: 10,
               minZoom: 0,
               maxZoom: 18,
               onTap: (TapPosition tapPosition, LatLng latLng) {
@@ -141,49 +168,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 urlTemplate: '$mapProviderUrl/{z}/{x}/{y}.png',
                 tileProvider: myTileProvider,
               ),
-              CurrentLocationLayer(),
-              PolygonLayer(
-                polygonCulling: true,
-                polygons: [
-                  Polygon(
-                      points: [
-                        const LatLng(36.95, -9.5),
-                        const LatLng(42.25, -9.5),
-                        const LatLng(42.25, -6.2),
-                        const LatLng(36.95, -6.2),
-                      ],
-                      color: Colors.blue.withOpacity(0.2),
-                      borderStrokeWidth: 1,
-                      borderColor: Colors.blue,
-                      isFilled: true),
-                ],
+              CurrentLocationLayer(
+                followOnLocationUpdate: followLocation,
+                turnOnHeadingUpdate: turnOnHeading,
               ),
               PolylineLayer(
                 polylines: trackPoints,
-              ),
-              CircleLayer(
-                circles: [
-                  CircleMarker(
-                    point: const LatLng(52.2677, 5.1689), // center of 't Gooi
-                    radius: 5000,
-                    useRadiusInMeter: true,
-                    color: Colors.red.withOpacity(0.3),
-                    borderColor: Colors.red.withOpacity(0.7),
-                    borderStrokeWidth: 2,
-                  )
-                ],
-              ),
-              MarkerLayer(
-                markers: [
-                  Marker(
-                    point: currentPosition,
-                    builder: (context) => const Icon(
-                      Icons.navigation,
-                      color: Colors.blue,
-                      // size: 50,
-                    ),
-                  ),
-                ],
               ),
             ],
           ),
@@ -195,13 +185,47 @@ class _MyHomePageState extends State<MyHomePage> {
         spacing: 10,
         children: [
           FloatingActionButton(
+            onPressed: () {
+              setState(() {
+                if (turnOnHeading == TurnOnHeadingUpdate.never) {
+                  turnOnHeading = TurnOnHeadingUpdate.always;
+                } else {
+                  turnOnHeading = TurnOnHeadingUpdate.never;
+                }
+              });
+            },
+            tooltip: 'Dirección',
+            backgroundColor:
+                turnOnHeading == TurnOnHeadingUpdate.always ? Colors.brown[300] : Colors.white,
+            child: const Icon(
+              Icons.compass_calibration_outlined,
+            ),
+          ),
+          FloatingActionButton(
+            onPressed: () {
+              setState(() {
+                if (followLocation == FollowOnLocationUpdate.never) {
+                  followLocation = FollowOnLocationUpdate.always;
+                } else {
+                  followLocation = FollowOnLocationUpdate.never;
+                }
+              });
+            },
+            tooltip: 'Locate',
+            backgroundColor:
+                followLocation == FollowOnLocationUpdate.always ? Colors.blue : Colors.white,
+            child: const Icon(
+              Icons.my_location_rounded,
+            ),
+          ),
+          FloatingActionButton(
             onPressed: () async {
               setState(
                 () {
                   isLoading = true;
                 },
               );
-              List<LatLng> points = await loadTrack(mapController, true);
+              List<LatLng> points = await trackController.loadTrack(mapController);
               if (points.isNotEmpty) {
                 setState(
                   () {
@@ -219,18 +243,9 @@ class _MyHomePageState extends State<MyHomePage> {
             },
             tooltip: 'Import File',
             backgroundColor: Colors.green,
-            child: const Icon(Icons.arrow_circle_down),
-          ),
-          FloatingActionButton(
-            onPressed: () async {
-              currentPosition = await locationController.getCurrentPosition();
-              mapController.move(currentPosition, 16);
-              setState(() {
-                currentPosition = currentPosition;
-              });
-            },
-            tooltip: 'Locate',
-            child: const Icon(Icons.my_location_rounded),
+            child: const Icon(
+              Icons.download,
+            ),
           ),
         ],
       ), // This trailing comma makes auto-formatting nicer for build methods.
