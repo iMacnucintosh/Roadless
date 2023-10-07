@@ -2,7 +2,7 @@ const mapProviderUrls = {
   "OpenStreetMap": "https://tile.openstreetmap.org",
   "StamenToner": "https://stamen-tiles.a.ssl.fastly.net/toner-background",
   "StamenTerrain": "https://stamen-tiles.a.ssl.fastly.net/terrain",
-  "OpenCycleMap": "https://tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=c1522771387c4170a55beb3ecaaabf61",
+  "OpenCycleMap": "https://tile.thunderforest.com/cycle",
   "Transport": "https://tile.thunderforest.com/transport/{z}/{x}/{y}.png?apikey=c1522771387c4170a55beb3ecaaabf61",
   "Landscape": "https://tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey=c1522771387c4170a55beb3ecaaabf61",
   "Outdoors": "https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=c1522771387c4170a55beb3ecaaabf61",

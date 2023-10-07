@@ -16,9 +16,9 @@ class MyTileProvider extends TileProvider {
     final y = coordinates.y.toInt();
 
     // Construye la URL de la imagen de acuerdo a tu fuente personalizada.
-    final tileUrl = '$baseUrl/$zoom/$x/$y.png'; // Reemplaza con tu lógica
+    final tileUrl = '$baseUrl/$zoom/$x/$y.png?apikey=c1522771387c4170a55beb3ecaaabf61';
 
-    print('$zoom/$x/$y');
+    // print('$zoom/$x/$y');
     return tileUrl;
   }
 

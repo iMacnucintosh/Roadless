@@ -1,16 +1,13 @@
-import 'dart:math';
-
-import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:roadless/components/loading_spinner.dart';
 import 'package:roadless/controllers/track_controller.dart';
 import 'package:roadless/providers/my_tile_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:wakelock/wakelock.dart';
 
 import 'constants/map_providers.dart';
 
@@ -40,7 +37,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Map Example'),
+      home: const MyHomePage(title: 'Roadless'),
     );
   }
 }
@@ -80,7 +77,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   initState() {
     super.initState();
-    Wakelock.enable();
     // Timer.periodic(const Duration(seconds: 2), (timer) async {
     //   currentPosition = await locationController.getCurrentPosition();
     //   mapController.move(currentPosition, lastZoom);
@@ -125,53 +121,44 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
 
-    String mapProviderUrl = mapProviderUrls["OpenStreetMap"]!;
+    String mapProviderUrl = mapProviderUrls["OpenCycleMap"]!;
 
     final myTileProvider = MyTileProvider(
       baseUrl: mapProviderUrl,
     );
 
     return Scaffold(
-      // appBar: AppBar(
-      //   // Here we take the value from the MyHomePage object that was created by
-      //   // the App.build method, and use it to set our appbar title.
-      //   title: Text(widget.title),
-      // ),
       body: Stack(
         children: [
           FlutterMap(
             options: MapOptions(
               center: initialMapPosition,
-              zoom: 10,
+              zoom: 12,
               minZoom: 0,
               maxZoom: 18,
-              onTap: (TapPosition tapPosition, LatLng latLng) {
-                num n = pow(2, mapController.zoom.toInt());
-                double xtile = n * ((mapController.center.longitude + 180) / 360);
-                double ytile = n *
-                    (1 -
-                        (log(tan(mapController.center.latitudeInRad) +
-                                acos(mapController.center.latitudeInRad)) /
-                            pi)) /
-                    2;
-                try {
-                  CachedNetworkImageProvider(
-                      "https://tile.openstreetmap.org/${mapController.zoom.toInt()}/$xtile/$ytile.png");
-                } on Exception catch (e) {
-                  print(e);
-                }
-              },
             ),
             mapController: mapController,
             children: [
               TileLayer(
-                urlTemplate: '$mapProviderUrl/{z}/{x}/{y}.png',
+                urlTemplate: mapProviderUrl,
                 tileProvider: myTileProvider,
               ),
               CurrentLocationLayer(
-                followOnLocationUpdate: followLocation,
-                turnOnHeadingUpdate: turnOnHeading,
-              ),
+                  followOnLocationUpdate: followLocation,
+                  turnOnHeadingUpdate: turnOnHeading,
+                  positionStream:
+                      const LocationMarkerDataStreamFactory().fromGeolocatorPositionStream(
+                    stream: Geolocator.getPositionStream(
+                      locationSettings: Platform.isAndroid ? AndroidSettings(
+                          accuracy: LocationAccuracy.best,
+                          distanceFilter: 0,
+                          intervalDuration: const Duration(milliseconds: 10),
+                          ) : const LocationSettings(
+                            accuracy: LocationAccuracy.bestForNavigation,
+                            distanceFilter: 0,
+                          ),
+                    ),
+                  )),
               PolylineLayer(
                 polylines: trackPoints,
               ),
@@ -186,6 +173,32 @@ class _MyHomePageState extends State<MyHomePage> {
         children: [
           FloatingActionButton(
             onPressed: () {
+              mapController.move(mapController.center, mapController.zoom + 1);
+            },
+            tooltip: 'Ampliar Zoom',
+            backgroundColor: Colors.green,
+            child: const Icon(
+              Icons.add,
+            ),
+          ),
+          const SizedBox(
+            height: 5,
+          ),
+          FloatingActionButton(
+            onPressed: () {
+              mapController.move(mapController.center, mapController.zoom + -1);
+            },
+            tooltip: 'Reducir Zoom',
+            backgroundColor: Colors.red,
+            child: const Icon(
+              Icons.remove,
+            ),
+          ),
+          const SizedBox(
+            height: 60,
+          ),
+          FloatingActionButton(
+            onPressed: () {
               setState(() {
                 if (turnOnHeading == TurnOnHeadingUpdate.never) {
                   turnOnHeading = TurnOnHeadingUpdate.always;
@@ -196,7 +209,7 @@ class _MyHomePageState extends State<MyHomePage> {
             },
             tooltip: 'Dirección',
             backgroundColor:
-                turnOnHeading == TurnOnHeadingUpdate.always ? Colors.brown[300] : Colors.white,
+                turnOnHeading == TurnOnHeadingUpdate.always ? Colors.teal : Colors.grey,
             child: const Icon(
               Icons.compass_calibration_outlined,
             ),
@@ -213,7 +226,7 @@ class _MyHomePageState extends State<MyHomePage> {
             },
             tooltip: 'Locate',
             backgroundColor:
-                followLocation == FollowOnLocationUpdate.always ? Colors.blue : Colors.white,
+                followLocation == FollowOnLocationUpdate.always ? Colors.blue : Colors.grey,
             child: const Icon(
               Icons.my_location_rounded,
             ),
@@ -242,7 +255,7 @@ class _MyHomePageState extends State<MyHomePage> {
               }
             },
             tooltip: 'Import File',
-            backgroundColor: Colors.green,
+            backgroundColor: Colors.blueGrey,
             child: const Icon(
               Icons.download,
             ),
