@@ -1,8 +1,8 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:latlong2/latlong.dart';
@@ -10,8 +10,7 @@ import 'package:roadless/components/loading_spinner.dart';
 import 'package:roadless/controllers/track_controller.dart';
 import 'package:roadless/providers/my_tile_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:wakelock/wakelock.dart';
-
+import 'package:geolocator/geolocator.dart';
 import 'constants/map_providers.dart';
 
 void main() {
@@ -80,15 +79,13 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   initState() {
     super.initState();
-    Wakelock.enable();
-    // Timer.periodic(const Duration(seconds: 2), (timer) async {
-    //   currentPosition = await locationController.getCurrentPosition();
-    //   mapController.move(currentPosition, lastZoom);
-    //   setState(() {
-    //     currentPosition = currentPosition;
-    //     print(currentPosition);
-    //   });
-    // });
+    // Wakelock.enable();
+    Timer.periodic(const Duration(seconds: 1), (Timer t) async {
+      Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
+      currentPosition = LatLng(position.latitude, position.longitude);
+    });
 
     _prefs.then((SharedPreferences prefs) async {
       String track = prefs.getString('last_track') ?? "";
@@ -146,17 +143,9 @@ class _MyHomePageState extends State<MyHomePage> {
               minZoom: 0,
               maxZoom: 18,
               onTap: (TapPosition tapPosition, LatLng latLng) {
-                num n = pow(2, mapController.zoom.toInt());
-                double xtile = n * ((mapController.center.longitude + 180) / 360);
-                double ytile = n *
-                    (1 -
-                        (log(tan(mapController.center.latitudeInRad) +
-                                acos(mapController.center.latitudeInRad)) /
-                            pi)) /
-                    2;
+                TileCoordinates tileCoords = latLngToTileCoord(latLng, mapController.zoom.toInt());
                 try {
-                  CachedNetworkImageProvider(
-                      "https://tile.openstreetmap.org/${mapController.zoom.toInt()}/$xtile/$ytile.png");
+                  CachedNetworkImageProvider("https://tile.openstreetmap.org/${tileCoords.z}/${tileCoords.x}/${tileCoords.y}");
                 } on Exception catch (e) {
                   print(e);
                 }
@@ -185,6 +174,29 @@ class _MyHomePageState extends State<MyHomePage> {
         spacing: 10,
         children: [
           FloatingActionButton(
+            onPressed: () async {
+              // final ImageCacheManager _cacheManager = DefaultCacheManager();
+              // var file = await _cacheManager.getFileFromCache("libCachedImageData");
+              // print(file);
+              for (LatLng point in trackPoints[0].points) {
+                TileCoordinates tileCoords = latLngToTileCoord(point, 18);
+                ImageProvider imageProvider = myTileProvider.getImage(
+                  tileCoords,
+                  TileLayer(
+                    urlTemplate: '$mapProviderUrl/{z}/{x}/{y}.png',
+                    tileProvider: myTileProvider,
+                  ),
+                );
+                print(imageProvider);
+              }
+            },
+            tooltip: 'Descargar',
+            backgroundColor: Colors.blue,
+            child: const Icon(
+              Icons.download_for_offline,
+            ),
+          ),
+          FloatingActionButton(
             onPressed: () {
               setState(() {
                 if (turnOnHeading == TurnOnHeadingUpdate.never) {
@@ -195,8 +207,7 @@ class _MyHomePageState extends State<MyHomePage> {
               });
             },
             tooltip: 'Dirección',
-            backgroundColor:
-                turnOnHeading == TurnOnHeadingUpdate.always ? Colors.brown[300] : Colors.white,
+            backgroundColor: turnOnHeading == TurnOnHeadingUpdate.always ? Colors.brown[300] : Colors.white,
             child: const Icon(
               Icons.compass_calibration_outlined,
             ),
@@ -212,8 +223,7 @@ class _MyHomePageState extends State<MyHomePage> {
               });
             },
             tooltip: 'Locate',
-            backgroundColor:
-                followLocation == FollowOnLocationUpdate.always ? Colors.blue : Colors.white,
+            backgroundColor: followLocation == FollowOnLocationUpdate.always ? Colors.blue : Colors.white,
             child: const Icon(
               Icons.my_location_rounded,
             ),
@@ -227,6 +237,18 @@ class _MyHomePageState extends State<MyHomePage> {
               );
               List<LatLng> points = await trackController.loadTrack(mapController);
               if (points.isNotEmpty) {
+                for (LatLng point in points) {
+                  // print(point);
+                  TileCoordinates tileCoords = latLngToTileCoord(point, 18);
+                  myTileProvider.getImage(
+                    tileCoords,
+                    TileLayer(
+                      urlTemplate: '$mapProviderUrl/{z}/{x}/{y}.png',
+                      tileProvider: myTileProvider,
+                    ),
+                  );
+                  // CachedNetworkImageProvider("https://tile.openstreetmap.org/${tileCoords.z}/${tileCoords.x}/${tileCoords.y}");
+                }
                 setState(
                   () {
                     trackPoints = [
@@ -250,5 +272,27 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+  TileCoordinates latLngToTileCoord(LatLng latLng, int zoom) {
+    final int tileSize = 256;
+    final double initialResolution =
+        2 * 3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679 / tileSize;
+
+    double latRad = latLng.latitude * 3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679 / 180.0;
+    double x = (latLng.longitude + 180.0) / 360.0;
+    double sinLatitude = sin(latRad);
+    double y = 0.5 -
+        log((1.0 + sinLatitude) / (1.0 - sinLatitude)) /
+            (4.0 * 3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679);
+
+    int mapSize = tileSize << zoom;
+    int pixelX = (x * mapSize).floor();
+    int pixelY = (y * mapSize).floor();
+
+    int tileX = (pixelX / tileSize).floor();
+    int tileY = (pixelY / tileSize).floor();
+
+    return TileCoordinates(tileX, tileY, zoom.toInt());
   }
 }

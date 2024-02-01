@@ -25,7 +25,10 @@ class MyTileProvider extends TileProvider {
   @override
   ImageProvider getImage(TileCoordinates coordinates, TileLayer options) {
     final tileUrl = getTileUrl(coordinates, options);
-    return CachedNetworkImageProvider(
-        tileUrl); // O usa una imagen en blanco o un azulejo de respaldo aquí
+    CachedNetworkImageProvider cachedNetworkImageProvider = CachedNetworkImageProvider(
+      tileUrl,
+    ); // O usa una imagen en blanco o un azulejo de respaldo aquí
+    print(cachedNetworkImageProvider);
+    return cachedNetworkImageProvider;
   }
 }
