@@ -1,13 +1,8 @@
 import 'dart:io';
 import 'dart:math';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:roadless/constants/map_providers.dart';
-import 'package:roadless/controllers/track_controller.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 List<int> getXY(int zoomLevel, LatLng point) {
   num n = pow(2, zoomLevel);
