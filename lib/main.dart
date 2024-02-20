@@ -1,172 +1,182 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:roadless/components/loading_spinner.dart';
 import 'package:roadless/controllers/track_controller.dart';
-import 'package:roadless/providers/my_tile_provider.dart';
+import 'package:roadless/models/track.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:geolocator/geolocator.dart';
-import 'constants/map_providers.dart';
+import 'package:volume_controller/volume_controller.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const Roadless());
 }
 
-class MyApp extends StatelessWidget {
-  MyApp({super.key});
+class Roadless extends StatelessWidget {
+  const Roadless({super.key});
 
-  final mapController = MapController();
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Roadless',
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // Try running your application with "flutter run". You'll see the
-        // application has a blue toolbar. Then, without quitting the app, try
-        // changing the primarySwatch below to Colors.green and then invoke
-        // "hot reload" (press "r" in the console where you ran "flutter run",
-        // or simply save your changes to "hot reload" in a Flutter IDE).
-        // Notice that the counter didn't reset back to zero; the application
-        // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Map Example'),
+      home: const Home(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class Home extends StatefulWidget {
+  const Home({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<Home> createState() => _HomeState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  MapController mapController = MapController();
-  TrackController trackController = TrackController();
-  final Future<SharedPreferences> _prefs = SharedPreferences.getInstance();
+class _HomeState extends State<Home> {
+  late bool _navigationMode;
+  late int _pointerCount;
+  double zoomLevel = 2;
+  late AlignOnUpdate _alignPositionOnUpdate;
+  late AlignOnUpdate _alignDirectionOnUpdate;
+  late final StreamController<double?> _alignPositionStreamController;
+  late final StreamController<void> _alignDirectionStreamController;
 
-  LatLng initialMapPosition = const LatLng(41.645838, -4.730120);
-  LatLng currentPosition = const LatLng(41.645838, -4.730120);
-  double lastZoom = 16;
-  List<Polyline> trackPoints = List.empty();
-  bool isLoading = false;
-  late Future<String> lastTrack;
-  FollowOnLocationUpdate followLocation = FollowOnLocationUpdate.never;
-  TurnOnHeadingUpdate turnOnHeading = TurnOnHeadingUpdate.never;
+  late MapController _mapController;
+  late TrackController _trackController;
+
+  late List<Track> visibleTracks = List.empty(growable: true);
+  late double _setVolumeValue;
 
   @override
-  initState() {
+  void initState() {
     super.initState();
-    // Wakelock.enable();
-    Timer.periodic(const Duration(seconds: 1), (Timer t) async {
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-      currentPosition = LatLng(position.latitude, position.longitude);
-    });
+    _navigationMode = false;
+    _pointerCount = 0;
+    _alignPositionOnUpdate = AlignOnUpdate.never;
+    _alignDirectionOnUpdate = AlignOnUpdate.never;
+    _alignPositionStreamController = StreamController<double?>();
+    _alignDirectionStreamController = StreamController<void>();
 
-    _prefs.then((SharedPreferences prefs) async {
-      String track = prefs.getString('last_track') ?? "";
-      if (track.isNotEmpty) {
-        List<LatLng> points = await trackController.loadTrackFromString(track);
-        if (points.isNotEmpty) {
-          setState(
-            () {
-              trackPoints = [
-                Polyline(
-                  points: points,
-                  color: Colors.blueAccent,
-                  strokeWidth: 3,
-                ),
-              ];
-              isLoading = false;
-            },
-          );
+    _mapController = MapController();
+    _trackController = TrackController();
+
+    VolumeController().listener((volume) {
+      setState(() {
+        if (volume < _setVolumeValue) {
+          zoomLevel -= 1;
+          _alignPositionStreamController.add(zoomLevel);
+        } else if (volume > _setVolumeValue) {
+          zoomLevel += 1;
+          _alignPositionStreamController.add(zoomLevel);
         }
-      }
+        _setVolumeValue = volume;
+      });
     });
 
-    mapController.mapEventStream.listen((event) {
-      lastZoom = event.zoom;
-    });
+    VolumeController().getVolume().then((volume) => _setVolumeValue = volume);
+
+    loadVisibleTracks();
+  }
+
+  @override
+  void dispose() {
+    _alignPositionStreamController.close();
+    _alignDirectionStreamController.close();
+
+    VolumeController().removeListener();
+
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-
-    String mapProviderUrl = mapProviderUrls["OpenStreetMap"]!;
-
-    final myTileProvider = MyTileProvider(
-      baseUrl: mapProviderUrl,
-    );
-
     return Scaffold(
-      // appBar: AppBar(
-      //   // Here we take the value from the MyHomePage object that was created by
-      //   // the App.build method, and use it to set our appbar title.
-      //   title: Text(widget.title),
-      // ),
-      body: Stack(
-        children: [
-          FlutterMap(
-            options: MapOptions(
-              center: initialMapPosition,
-              zoom: 10,
-              minZoom: 0,
-              maxZoom: 18,
-              onTap: (TapPosition tapPosition, LatLng latLng) {
-                TileCoordinates tileCoords = latLngToTileCoord(latLng, mapController.zoom.toInt());
-                try {
-                  CachedNetworkImageProvider("https://tile.openstreetmap.org/${tileCoords.z}/${tileCoords.x}/${tileCoords.y}");
-                } on Exception catch (e) {
-                  print(e);
-                }
-              },
+      appBar: AppBar(
+        title: const Text('Roadless'),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              Track? track = await _trackController.loadTrack(_mapController);
+              if (track != null) {
+                visibleTracks.clear();
+                setState(() {
+                  visibleTracks.add(track);
+                });
+              }
+            },
+            icon: const Icon(
+              Icons.file_open_rounded,
             ),
-            mapController: mapController,
-            children: [
-              TileLayer(
-                urlTemplate: '$mapProviderUrl/{z}/{x}/{y}.png',
-                tileProvider: myTileProvider,
-              ),
-              CurrentLocationLayer(
-                followOnLocationUpdate: followLocation,
-                turnOnHeadingUpdate: turnOnHeading,
-              ),
-              PolylineLayer(
-                polylines: trackPoints,
-              ),
-            ],
           ),
-          isLoading ? const LoadingSpinner() : Container()
+          IconButton(
+            onPressed: () async {
+              FilePickerResult? result = await FilePicker.platform.pickFiles();
+              if (result != null) {
+                File map = File(result.files.single.path!);
+                print(map);
+              }
+            },
+            icon: const Icon(
+              Icons.map,
+            ),
+          ),
+        ],
+      ),
+      body: FlutterMap(
+        mapController: _mapController,
+        options: MapOptions(
+            initialCenter: const LatLng(0, 0),
+            initialZoom: zoomLevel,
+            minZoom: 0,
+            maxZoom: 19,
+            onPointerDown: _onPointerDown,
+            onPointerUp: _onPointerUp,
+            onPointerCancel: _onPointerUp,
+            onMapEvent: _onMapEvent),
+        children: [
+          TileLayer(
+            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            userAgentPackageName: 'net.tlserver6y.flutter_map_location_marker.example',
+            maxZoom: 19,
+          ),
+          CurrentLocationLayer(
+            focalPoint: const FocalPoint(
+              ratio: Point(0.0, 1.0),
+              offset: Point(0.0, -60.0),
+            ),
+            alignPositionStream: _alignPositionStreamController.stream,
+            alignDirectionStream: _alignDirectionStreamController.stream,
+            alignPositionOnUpdate: _alignPositionOnUpdate,
+            alignDirectionOnUpdate: _alignDirectionOnUpdate,
+            style: const LocationMarkerStyle(
+              marker: DefaultLocationMarker(
+                child: Icon(
+                  Icons.navigation,
+                  color: Colors.white,
+                ),
+              ),
+              markerSize: Size(40, 40),
+              markerDirection: MarkerDirection.heading,
+            ),
+          ),
+          PolylineLayer(
+            polylines: visibleTracks
+                .map(
+                  (track) => Polyline(
+                    points: track.points,
+                    strokeWidth: 6,
+                    color: track.color,
+                  ),
+                )
+                .toList(),
+          ),
         ],
       ),
       floatingActionButton: Wrap(
@@ -174,125 +184,106 @@ class _MyHomePageState extends State<MyHomePage> {
         spacing: 10,
         children: [
           FloatingActionButton(
-            onPressed: () async {
-              // final ImageCacheManager _cacheManager = DefaultCacheManager();
-              // var file = await _cacheManager.getFileFromCache("libCachedImageData");
-              // print(file);
-              for (LatLng point in trackPoints[0].points) {
-                TileCoordinates tileCoords = latLngToTileCoord(point, 18);
-                ImageProvider imageProvider = myTileProvider.getImage(
-                  tileCoords,
-                  TileLayer(
-                    urlTemplate: '$mapProviderUrl/{z}/{x}/{y}.png',
-                    tileProvider: myTileProvider,
-                  ),
-                );
-                print(imageProvider);
-              }
-            },
-            tooltip: 'Descargar',
-            backgroundColor: Colors.blue,
-            child: const Icon(
-              Icons.download_for_offline,
-            ),
-          ),
-          FloatingActionButton(
+            backgroundColor: Colors.brown,
+            foregroundColor: Colors.white,
             onPressed: () {
-              setState(() {
-                if (turnOnHeading == TurnOnHeadingUpdate.never) {
-                  turnOnHeading = TurnOnHeadingUpdate.always;
-                } else {
-                  turnOnHeading = TurnOnHeadingUpdate.never;
-                }
-              });
+              zoomLevel = 28;
+              _alignPositionStreamController.add(zoomLevel);
             },
-            tooltip: 'Dirección',
-            backgroundColor: turnOnHeading == TurnOnHeadingUpdate.always ? Colors.brown[300] : Colors.white,
             child: const Icon(
-              Icons.compass_calibration_outlined,
+              Icons.zoom_in_map_rounded,
             ),
           ),
+          const SizedBox(
+            height: 10,
+          ),
           FloatingActionButton(
+            backgroundColor: Colors.green,
+            foregroundColor: Colors.white,
             onPressed: () {
-              setState(() {
-                if (followLocation == FollowOnLocationUpdate.never) {
-                  followLocation = FollowOnLocationUpdate.always;
-                } else {
-                  followLocation = FollowOnLocationUpdate.never;
-                }
-              });
+              zoomLevel += 1;
+              _alignPositionStreamController.add(zoomLevel);
             },
-            tooltip: 'Locate',
-            backgroundColor: followLocation == FollowOnLocationUpdate.always ? Colors.blue : Colors.white,
             child: const Icon(
-              Icons.my_location_rounded,
+              Icons.zoom_in,
             ),
           ),
           FloatingActionButton(
-            onPressed: () async {
+            backgroundColor: const Color.fromARGB(255, 204, 72, 63),
+            foregroundColor: Colors.white,
+            onPressed: () {
+              zoomLevel -= 1;
+              _alignPositionStreamController.add(zoomLevel);
+            },
+            child: const Icon(
+              Icons.zoom_out,
+            ),
+          ),
+          const SizedBox(
+            height: 10,
+          ),
+          FloatingActionButton(
+            backgroundColor: _navigationMode ? Colors.blue : Colors.grey,
+            foregroundColor: Colors.white,
+            onPressed: () {
               setState(
                 () {
-                  isLoading = true;
+                  _navigationMode = !_navigationMode;
+                  _alignPositionOnUpdate =
+                      _navigationMode ? AlignOnUpdate.always : AlignOnUpdate.never;
+                  _alignDirectionOnUpdate =
+                      _navigationMode ? AlignOnUpdate.always : AlignOnUpdate.never;
                 },
               );
-              List<LatLng> points = await trackController.loadTrack(mapController);
-              if (points.isNotEmpty) {
-                for (LatLng point in points) {
-                  // print(point);
-                  TileCoordinates tileCoords = latLngToTileCoord(point, 18);
-                  myTileProvider.getImage(
-                    tileCoords,
-                    TileLayer(
-                      urlTemplate: '$mapProviderUrl/{z}/{x}/{y}.png',
-                      tileProvider: myTileProvider,
-                    ),
-                  );
-                  // CachedNetworkImageProvider("https://tile.openstreetmap.org/${tileCoords.z}/${tileCoords.x}/${tileCoords.y}");
-                }
-                setState(
-                  () {
-                    trackPoints = [
-                      Polyline(
-                        points: points,
-                        color: Colors.blueAccent,
-                        strokeWidth: 3,
-                      ),
-                    ];
-                    isLoading = false;
-                  },
-                );
+              if (_navigationMode) {
+                _alignPositionStreamController.add(zoomLevel);
+                _alignDirectionStreamController.add(null);
               }
             },
-            tooltip: 'Import File',
-            backgroundColor: Colors.green,
             child: const Icon(
-              Icons.download,
+              Icons.navigation_outlined,
             ),
           ),
         ],
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),
     );
   }
 
-  TileCoordinates latLngToTileCoord(LatLng latLng, int zoom) {
-    final int tileSize = 256;
-    final double initialResolution =
-        2 * 3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679 / tileSize;
+  void _onMapEvent(MapEvent mapEvent) {
+    zoomLevel = mapEvent.camera.zoom;
+  }
 
-    double latRad = latLng.latitude * 3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679 / 180.0;
-    double x = (latLng.longitude + 180.0) / 360.0;
-    double sinLatitude = sin(latRad);
-    double y = 0.5 -
-        log((1.0 + sinLatitude) / (1.0 - sinLatitude)) /
-            (4.0 * 3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679);
+  // Disable align position and align direction temporarily when user is
+  // manipulating the map.
+  void _onPointerDown(e, l) {
+    _pointerCount++;
+    setState(() {
+      _alignPositionOnUpdate = AlignOnUpdate.never;
+      _alignDirectionOnUpdate = AlignOnUpdate.never;
+    });
+  }
 
-    int mapSize = tileSize << zoom;
-    int pixelX = (x * mapSize).floor();
-    int pixelY = (y * mapSize).floor();
+  // Enable align position and align direction again when user manipulation
+  // ended.
+  void _onPointerUp(e, l) {
+    if (--_pointerCount == 0 && _navigationMode) {
+      setState(() {
+        _alignPositionOnUpdate = AlignOnUpdate.always;
+        _alignDirectionOnUpdate = AlignOnUpdate.always;
+      });
+      _alignPositionStreamController.add(zoomLevel);
+      _alignDirectionStreamController.add(null);
+    }
+  }
 
-    int tileX = (pixelX / tileSize).floor();
-    int tileY = (pixelY / tileSize).floor();
+  void loadVisibleTracks() {
+    final Future<SharedPreferences> prefs = SharedPreferences.getInstance();
 
-    return TileCoordinates(tileX, tileY, zoom.toInt());
+    prefs.then((SharedPreferences prefs) async {
+      if (prefs.getString('last_track') != null) {
+        Track track = Track.fromJson(json.decode(prefs.getString('last_track')!));
+        visibleTracks.add(track);
+      }
+    });
   }
 }
