@@ -1,14 +1,13 @@
 {
-  "dart.flutterSdkPath": "~/fvm/versions/3.16.8",
-  "dart.flutterSdkPaths": ["/home/manu/fvm/versions"],
-  // Remove .fvm files from search
+  "dart.flutterSdkPath": ".fvm\\versions\\3.19.0",
+  "dart.flutterSdkPaths": [
+    "/home/manu/fvm/versions"
+  ],
   "search.exclude": {
     "**/.fvm": true
   },
-  // Remove from file watching
   "files.watcherExclude": {
     "**/.fvm": true
   },
-  "dart.lineLength": 150,
-  // ... other settings
+  "dart.lineLength": 150
 }

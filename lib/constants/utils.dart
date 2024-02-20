@@ -11,7 +11,7 @@ List<int> getXY(int zoomLevel, LatLng point) {
   return [xtile.toInt(), ytile.toInt()];
 }
 
-Future<File?> pickFile() async { 
+Future<File?> pickFile() async {
   FilePickerResult? result = await FilePicker.platform.pickFiles();
   File? file;
   if (result != null) {
