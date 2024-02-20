@@ -43,9 +43,6 @@ dependencies:
   flutter_map_cache: ^1.4.3
   volume_controller: ^2.0.7
 
-
-  # cached_network_image: ^3.3.0
-
 dev_dependencies:
   flutter_test:
     sdk: flutter

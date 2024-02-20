@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
@@ -79,6 +81,8 @@ class _HomeState extends State<Home> {
     });
 
     VolumeController().getVolume().then((volume) => _setVolumeValue = volume);
+
+    loadVisibleTracks();
   }
 
   @override
@@ -93,19 +97,34 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    loadVisibleTracks();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Roadless'),
         actions: [
           IconButton(
-            onPressed: () {
-              setState(() {
-                _trackController.loadTrack(_mapController);
-              });
+            onPressed: () async {
+              Track? track = await _trackController.loadTrack(_mapController);
+              if (track != null) {
+                visibleTracks.clear();
+                setState(() {
+                  visibleTracks.add(track);
+                });
+              }
             },
             icon: const Icon(
               Icons.file_open_rounded,
+            ),
+          ),
+          IconButton(
+            onPressed: () async {
+              FilePickerResult? result = await FilePicker.platform.pickFiles();
+              if (result != null) {
+                File map = File(result.files.single.path!);
+                print(map);
+              }
+            },
+            icon: const Icon(
+              Icons.map,
             ),
           ),
         ],
