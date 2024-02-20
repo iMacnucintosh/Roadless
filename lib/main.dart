@@ -7,13 +7,18 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
+import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:roadless/controllers/track_controller.dart';
 import 'package:roadless/models/track.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:volume_controller/volume_controller.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await FlutterMapTileCaching.initialise();
+  await FMTC.instance('mapStore').manage.createAsync();
+
   runApp(const Roadless());
 }
 
@@ -143,7 +148,8 @@ class _HomeState extends State<Home> {
         children: [
           TileLayer(
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'net.tlserver6y.flutter_map_location_marker.example',
+            // urlTemplate: 'https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png',
+            tileProvider: FMTC.instance('mapStore').getTileProvider(),
             maxZoom: 19,
           ),
           CurrentLocationLayer(
@@ -229,10 +235,8 @@ class _HomeState extends State<Home> {
               setState(
                 () {
                   _navigationMode = !_navigationMode;
-                  _alignPositionOnUpdate =
-                      _navigationMode ? AlignOnUpdate.always : AlignOnUpdate.never;
-                  _alignDirectionOnUpdate =
-                      _navigationMode ? AlignOnUpdate.always : AlignOnUpdate.never;
+                  _alignPositionOnUpdate = _navigationMode ? AlignOnUpdate.always : AlignOnUpdate.never;
+                  _alignDirectionOnUpdate = _navigationMode ? AlignOnUpdate.always : AlignOnUpdate.never;
                 },
               );
               if (_navigationMode) {
