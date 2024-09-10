@@ -1,13 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 import 'dart:math';
 
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_location_marker/flutter_map_location_marker.dart';
-import 'package:flutter_map_tile_caching/flutter_map_tile_caching.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:roadless/controllers/track_controller.dart';
 import 'package:roadless/models/track.dart';
@@ -16,8 +13,6 @@ import 'package:volume_controller/volume_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await FlutterMapTileCaching.initialise();
-  await FMTC.instance('mapStore').manage.createAsync();
 
   runApp(const Roadless());
 }
@@ -33,6 +28,7 @@ class Roadless extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: const Home(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
@@ -121,13 +117,7 @@ class _HomeState extends State<Home> {
             ),
           ),
           IconButton(
-            onPressed: () async {
-              FilePickerResult? result = await FilePicker.platform.pickFiles();
-              if (result != null) {
-                File map = File(result.files.single.path!);
-                print(map);
-              }
-            },
+            onPressed: () async {},
             icon: const Icon(
               Icons.map,
             ),
@@ -149,7 +139,6 @@ class _HomeState extends State<Home> {
           TileLayer(
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
             // urlTemplate: 'https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png',
-            tileProvider: FMTC.instance('mapStore').getTileProvider(),
             maxZoom: 19,
           ),
           CurrentLocationLayer(
