@@ -21,12 +21,18 @@ class Home extends ConsumerWidget {
                   return ListTile(
                     title: Text(tracks[index].name),
                     subtitle: Text(tracks[index].id),
+                    onTap: () {},
                   );
                 },
               ),
             ),
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        tooltip: "Añadir track",
+        onPressed: () {},
+        child: const Icon(Icons.add),
       ),
     );
   }
