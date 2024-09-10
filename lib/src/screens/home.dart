@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:roadless/src/providers/tracks_provider.dart';
+import 'package:roadless/src/screens/map.dart';
 
-class Home extends ConsumerWidget {
-  const Home({super.key});
+class HomeScreen extends ConsumerWidget {
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,7 +22,16 @@ class Home extends ConsumerWidget {
                   return ListTile(
                     title: Text(tracks[index].name),
                     subtitle: Text(tracks[index].id),
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MapScreen(
+                            track: tracks[index],
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
               ),

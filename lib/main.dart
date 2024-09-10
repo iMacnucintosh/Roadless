@@ -32,7 +32,7 @@ class Roadless extends ConsumerWidget {
       theme: lightTheme,
       darkTheme: darkTheme,
       themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
-      home: const Home(),
+      home: const HomeScreen(),
     );
   }
 }
