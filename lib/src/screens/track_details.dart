@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:roadless/src/models/track.dart';
 
-class MapScreen extends StatefulWidget {
+class TrackDetailsScreen extends StatefulWidget {
   final Track track;
 
-  const MapScreen({super.key, required this.track});
+  const TrackDetailsScreen({super.key, required this.track});
 
   @override
-  MapScreenState createState() => MapScreenState();
+  TrackDetailsScreenState createState() => TrackDetailsScreenState();
 }
 
-class MapScreenState extends State<MapScreen> {
+class TrackDetailsScreenState extends State<TrackDetailsScreen> {
   late MapController _mapController;
   late LatLngBounds trackBounds;
 

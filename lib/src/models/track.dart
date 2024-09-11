@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:gpx/gpx.dart';
@@ -12,12 +13,14 @@ class Track {
     required this.name,
     required this.trackData,
     required this.points,
+    this.image,
   });
 
   final String id;
   final String name;
   final String trackData;
   final List<LatLng> points;
+  final Uint8List? image;
 
   LatLngBounds getBounds() {
     double minLat = double.infinity;

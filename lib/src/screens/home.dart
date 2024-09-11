@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:roadless/src/models/track.dart';
 import 'package:roadless/src/providers/tracks_provider.dart';
-import 'package:roadless/src/screens/map.dart';
+import 'package:roadless/src/screens/track_details.dart';
 import 'package:roadless/src/screens/new_track.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -20,9 +20,15 @@ class HomeScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            Expanded(
-              child: ListView.builder(
+            SizedBox(
+              height: 180,
+              child: ListView.separated(
                 itemCount: tracks.length,
+                separatorBuilder: (BuildContext context, int index) {
+                  return const SizedBox(
+                    height: 5,
+                  );
+                },
                 itemBuilder: (context, index) {
                   return Dismissible(
                     key: Key(tracks[index].id),
@@ -42,12 +48,19 @@ class HomeScreen extends ConsumerWidget {
                       );
                     },
                     child: ListTile(
+                      contentPadding: const EdgeInsets.fromLTRB(8.0, 0.0, 0.0, 0.0),
                       tileColor: Colors.white,
                       title: Text(tracks[index].name),
                       subtitle: Text(
                         tracks[index].id,
                         style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Colors.grey[600]),
                       ),
+                      trailing: tracks[index].image != null
+                          ? Image.memory(
+                              tracks[index].image!,
+                              fit: BoxFit.cover,
+                            )
+                          : null,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.0),
                       ),
@@ -55,7 +68,7 @@ class HomeScreen extends ConsumerWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => MapScreen(
+                            builder: (context) => TrackDetailsScreen(
                               track: tracks[index],
                             ),
                           ),
@@ -66,6 +79,13 @@ class HomeScreen extends ConsumerWidget {
                 },
               ),
             ),
+            SizedBox(
+              height: 150,
+              child: CarouselView(
+                itemExtent: 200,
+                children: tracks.map((track) => Image.memory(track.image!, fit: BoxFit.cover)).toList(),
+              ),
+            )
           ],
         ),
       ),
