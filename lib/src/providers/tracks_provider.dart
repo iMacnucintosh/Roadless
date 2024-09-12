@@ -1,13 +1,31 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:roadless/src/models/track.dart';
+import 'package:roadless/src/providers/shared_preferences_provider.dart';
 
 class TracksNotifier extends StateNotifier<List<Track>> {
-  TracksNotifier(this.ref) : super([]);
+  TracksNotifier(this.ref) : super([]) {
+    // _initializeRules();
+  }
 
   final Ref ref;
   Track? previousTrack;
+
+  void _initializeRules() {
+    final sharedPreferences = ref.watch(sharedPreferencesProvider);
+    String? tracksList = sharedPreferences.getString("tracks");
+    if (tracksList != null) {
+      List<String> tracksData = List<String>.from(jsonDecode(tracksList));
+      List<Track> track = tracksData
+          .map(
+            (e) => Track.fromJson(jsonDecode(e)),
+          )
+          .toList();
+      state = track;
+    }
+  }
 
   List<Track> getTracks() {
     return state;

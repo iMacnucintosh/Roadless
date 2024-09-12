@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:roadless/src/models/track.dart';
+import 'package:roadless/src/providers/shared_preferences_provider.dart';
+import 'package:roadless/src/providers/theme_provider.dart';
 import 'package:roadless/src/providers/tracks_provider.dart';
 import 'package:roadless/src/screens/track_details.dart';
 import 'package:roadless/src/screens/new_track.dart';
@@ -13,15 +15,27 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tracks = ref.watch(tracksProvider);
+    final sharedPreferences = ref.watch(sharedPreferencesProvider);
 
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
+      appBar: AppBar(
+        title: const Text("Roadless"),
+        actions: [
+          Switch(
+            value: ref.watch(isDarkModeProvider),
+            onChanged: (value) {
+              sharedPreferences.setBool("is_dark_mode", value);
+              ref.read(isDarkModeProvider.notifier).update((state) => value);
+            },
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
-            SizedBox(
-              height: 180,
+            Expanded(
               child: ListView.separated(
                 itemCount: tracks.length,
                 separatorBuilder: (BuildContext context, int index) {
@@ -47,23 +61,8 @@ class HomeScreen extends ConsumerWidget {
                         SnackBar(content: Text("${tracks[index].name} eliminada")),
                       );
                     },
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.fromLTRB(8.0, 0.0, 0.0, 0.0),
-                      tileColor: Colors.white,
-                      title: Text(tracks[index].name),
-                      subtitle: Text(
-                        tracks[index].id,
-                        style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Colors.grey[600]),
-                      ),
-                      trailing: tracks[index].image != null
-                          ? Image.memory(
-                              tracks[index].image!,
-                              fit: BoxFit.cover,
-                            )
-                          : null,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10.0),
-                      ),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(10),
                       onTap: () {
                         Navigator.push(
                           context,
@@ -74,18 +73,86 @@ class HomeScreen extends ConsumerWidget {
                           ),
                         );
                       },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(tracks[index].name),
+                                  Text(
+                                    tracks[index].id,
+                                    style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Colors.grey[600]),
+                                  )
+                                ],
+                              ),
+                            ),
+                            if (Theme.of(context).colorScheme.brightness == Brightness.light)
+                              if (tracks[index].imageLight != null)
+                                ClipRRect(
+                                  borderRadius: const BorderRadius.only(topRight: Radius.circular(10), bottomRight: Radius.circular(10)),
+                                  child: Image.memory(
+                                    height: 60,
+                                    tracks[index].imageLight!,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                            if (Theme.of(context).colorScheme.brightness == Brightness.dark)
+                              if (tracks[index].imageDark != null)
+                                ClipRRect(
+                                  borderRadius: const BorderRadius.only(topRight: Radius.circular(10), bottomRight: Radius.circular(10)),
+                                  child: Image.memory(
+                                    height: 60,
+                                    tracks[index].imageDark!,
+                                    fit: BoxFit.cover,
+                                  ),
+                                )
+                          ],
+                        ),
+                        // title: Text(tracks[index].name),
+                        // subtitle: Text(
+                        //   tracks[index].id,
+                        //   style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Colors.grey[600]),
+                        // ),
+                        // trailing: Theme.of(context).colorScheme.brightness == Brightness.light
+                        //     ? tracks[index].imageLight != null
+                        //         ? Image.memory(
+                        //             tracks[index].imageLight!,
+                        //             fit: BoxFit.cover,
+                        //           )
+                        //         : null
+                        //     : tracks[index].imageDark != null
+                        //         ? Image.memory(
+                        //             tracks[index].imageDark!,
+                        //             fit: BoxFit.cover,
+                        //           )
+                        //         : null,
+                        // shape: RoundedRectangleBorder(
+                        //   borderRadius: BorderRadius.circular(10.0),
+                        // ),
+                        // onTap: () {
+                        //   Navigator.push(
+                        //     context,
+                        //     MaterialPageRoute(
+                        //       builder: (context) => TrackDetailsScreen(
+                        //         track: tracks[index],
+                        //       ),
+                        //     ),
+                        //   );
+                        // },
+                      ),
                     ),
                   );
                 },
               ),
             ),
-            SizedBox(
-              height: 150,
-              child: CarouselView(
-                itemExtent: 200,
-                children: tracks.map((track) => Image.memory(track.image!, fit: BoxFit.cover)).toList(),
-              ),
-            )
           ],
         ),
       ),

@@ -13,14 +13,16 @@ class Track {
     required this.name,
     required this.trackData,
     required this.points,
-    this.image,
+    this.imageLight,
+    this.imageDark,
   });
 
   final String id;
   final String name;
   final String trackData;
   final List<LatLng> points;
-  final Uint8List? image;
+  final Uint8List? imageLight;
+  final Uint8List? imageDark;
 
   LatLngBounds getBounds() {
     double minLat = double.infinity;
@@ -137,5 +139,27 @@ class Track {
       return '';
     }
     return track.metadata!.name ?? "";
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'trackData': trackData,
+      'points': points.map((e) => e.toJson()).toList(),
+      'imageLight': imageLight,
+      'imageDark': imageDark,
+    };
+  }
+
+  factory Track.fromJson(Map<String, dynamic> json) {
+    return Track(
+      id: json['id'],
+      name: json['name'],
+      trackData: json['trackData'],
+      points: [...json['points'].map((e) => LatLng.fromJson(e))],
+      imageLight: Uint8List.fromList([...json['imageLight'].map((e) => e)]),
+      imageDark: Uint8List.fromList([...json['imageDark'].map((e) => e)]),
+    );
   }
 }
