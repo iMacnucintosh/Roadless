@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:roadless/src/models/track.dart';
+import 'package:roadless/src/utils.dart';
 import 'package:uuid/uuid.dart';
 
 class TracksNotifier extends StateNotifier<List<Track>> {
@@ -19,18 +20,20 @@ class TracksNotifier extends StateNotifier<List<Track>> {
 
     List<Track> dummyTracks = [];
 
-    List<LatLng> points = Track.getTrackPoints(
+    List<LatLng> points = getTrackPoints(
       await trackFile.readAsString(),
     );
     String trackData = await trackFile.readAsString();
 
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 2; i++) {
       Track track = Track(
-        id: const Uuid().v4(),
-        name: 'Test Track $i',
-        trackData: trackData,
-        points: points,
-      );
+          id: const Uuid().v4(),
+          name: 'Test Track $i',
+          trackData: trackData,
+          points: points,
+          distance: calculateTrackDistance(
+            points,
+          ));
 
       dummyTracks.add(track);
     }

@@ -1,13 +1,14 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:roadless/src/models/track.dart';
 import 'package:roadless/src/providers/shared_preferences_provider.dart';
 import 'package:roadless/src/providers/theme_provider.dart';
 import 'package:roadless/src/providers/tracks_provider.dart';
 import 'package:roadless/src/screens/track_details.dart';
 import 'package:roadless/src/screens/new_track.dart';
+import 'package:roadless/src/utils.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -45,6 +46,7 @@ class HomeScreen extends ConsumerWidget {
                   );
                 },
                 itemBuilder: (context, index) {
+                  MapController mapController = MapController();
                   return Dismissible(
                     key: Key(tracks[index].id),
                     direction: DismissDirection.endToStart,
@@ -89,32 +91,63 @@ class HomeScreen extends ConsumerWidget {
                                 children: [
                                   Text(tracks[index].name),
                                   Text(
-                                    tracks[index].id,
+                                    "${tracks[index].distance} km",
                                     style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Colors.grey[600]),
                                   )
                                 ],
                               ),
                             ),
-                            if (Theme.of(context).colorScheme.brightness == Brightness.light)
-                              if (tracks[index].imageLight != null)
-                                ClipRRect(
-                                  borderRadius: const BorderRadius.only(topRight: Radius.circular(10), bottomRight: Radius.circular(10)),
-                                  child: Image.memory(
-                                    height: 60,
-                                    tracks[index].imageLight!,
-                                    fit: BoxFit.cover,
+                            SizedBox(
+                              width: 80,
+                              height: 50,
+                              child: FlutterMap(
+                                mapController: mapController,
+                                options: MapOptions(
+                                  initialCenter: tracks[index].getBounds().center,
+                                  initialZoom: fitBoundsFromTrackData(tracks[index].getBounds(), const Size(80, 180)),
+                                  interactionOptions: const InteractionOptions(
+                                    flags: InteractiveFlag.none,
                                   ),
                                 ),
-                            if (Theme.of(context).colorScheme.brightness == Brightness.dark)
-                              if (tracks[index].imageDark != null)
-                                ClipRRect(
-                                  borderRadius: const BorderRadius.only(topRight: Radius.circular(10), bottomRight: Radius.circular(10)),
-                                  child: Image.memory(
-                                    height: 60,
-                                    tracks[index].imageDark!,
-                                    fit: BoxFit.cover,
+                                children: [
+                                  TileLayer(
+                                    urlTemplate: Theme.of(context).colorScheme.brightness == Brightness.light
+                                        ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+                                        : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+                                    maxZoom: 19,
                                   ),
-                                )
+                                  PolylineLayer(
+                                    polylines: [
+                                      Polyline(
+                                        points: tracks[index].points,
+                                        strokeWidth: 2,
+                                        color: tracks[index].color,
+                                      ),
+                                    ],
+                                  )
+                                ],
+                              ),
+                            )
+                            // if (Theme.of(context).colorScheme.brightness == Brightness.light)
+                            //   if (tracks[index].imageLight != null)
+                            //     ClipRRect(
+                            //       borderRadius: const BorderRadius.only(topRight: Radius.circular(10), bottomRight: Radius.circular(10)),
+                            //       child: Image.memory(
+                            //         height: 60,
+                            //         tracks[index].imageLight!,
+                            //         fit: BoxFit.cover,
+                            //       ),
+                            //     ),
+                            // if (Theme.of(context).colorScheme.brightness == Brightness.dark)
+                            //   if (tracks[index].imageDark != null)
+                            //     ClipRRect(
+                            //       borderRadius: const BorderRadius.only(topRight: Radius.circular(10), bottomRight: Radius.circular(10)),
+                            //       child: Image.memory(
+                            //         height: 60,
+                            //         tracks[index].imageDark!,
+                            //         fit: BoxFit.cover,
+                            //       ),
+                            //     )
                           ],
                         ),
                       ),
@@ -129,7 +162,7 @@ class HomeScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton(
         tooltip: "Añadir track",
         onPressed: () async {
-          String? trackData = await Track.loadTrackData();
+          String? trackData = await loadTrackData();
 
           if (trackData != null) {
             Navigator.push(

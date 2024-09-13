@@ -1,14 +1,12 @@
-import 'dart:typed_data';
-import 'dart:ui';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:roadless/src/models/track.dart';
 import 'package:roadless/src/providers/color_provider.dart';
 import 'package:roadless/src/providers/tracks_provider.dart';
+import 'package:roadless/src/utils.dart';
 import 'package:uuid/uuid.dart';
 
 class NewTrackScreen extends ConsumerWidget {
@@ -22,12 +20,10 @@ class NewTrackScreen extends ConsumerWidget {
     dialogPickerColor = ref.watch(colorProvider);
 
     final formKey = GlobalKey<FormState>();
-    final boundaryKeyLight = GlobalKey();
-    final boundaryKeyDark = GlobalKey();
-    List<LatLng> points = Track.getTrackPoints(trackData);
-    TextEditingController nameController = TextEditingController(text: Track.getTrackName(trackData));
+    List<LatLng> points = getTrackPoints(trackData);
+    TextEditingController nameController = TextEditingController(text: getTrackName(trackData));
     MapController mapController = MapController();
-    LatLngBounds trackBounds = Track.getBoundsFromTrackData(trackData);
+    LatLngBounds trackBounds = getBoundsFromTrackData(trackData);
     Future<bool> colorPickerDialog() async {
       return ColorPicker(
         color: dialogPickerColor,
@@ -97,49 +93,48 @@ class NewTrackScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: formKey,
-          child: LayoutBuilder(builder: (context, constraints) {
-            return Column(
-              children: [
-                TextFormField(
-                  validator: (value) {
-                    if (value!.isEmpty) {
-                      return 'Nombre del track';
-                    }
-                    return null;
-                  },
-                  controller: nameController,
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text("Color: "),
-                    ColorIndicator(
-                      width: 55,
-                      height: 32,
-                      borderRadius: 30,
-                      color: dialogPickerColor,
-                      onSelectFocus: false,
-                      onSelect: () async {
-                        final Color colorBeforeDialog = dialogPickerColor;
-                        if (!(await colorPickerDialog())) {
-                          dialogPickerColor = colorBeforeDialog;
-                        }
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: constraints.maxWidth,
-                  height: constraints.maxHeight / 3,
-                  child: RepaintBoundary(
-                    key: Theme.of(context).colorScheme.brightness == Brightness.light ? boundaryKeyLight : boundaryKeyDark,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return Column(
+                children: [
+                  TextFormField(
+                    validator: (value) {
+                      if (value!.isEmpty) {
+                        return 'Nombre del track';
+                      }
+                      return null;
+                    },
+                    controller: nameController,
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("Color: "),
+                      ColorIndicator(
+                        width: 55,
+                        height: 32,
+                        borderRadius: 30,
+                        color: dialogPickerColor,
+                        onSelectFocus: false,
+                        onSelect: () async {
+                          final Color colorBeforeDialog = dialogPickerColor;
+                          if (!(await colorPickerDialog())) {
+                            dialogPickerColor = colorBeforeDialog;
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: constraints.maxWidth,
+                    height: constraints.maxHeight / 3,
                     child: FlutterMap(
                       mapController: mapController,
                       options: MapOptions(
                         initialCenter: trackBounds.center,
-                        initialZoom: Track.fitBoundsFromTrackData(trackBounds, constraints.biggest),
+                        initialZoom: fitBoundsFromTrackData(trackBounds, constraints.biggest),
                         interactionOptions: const InteractionOptions(
                           flags: InteractiveFlag.none,
                         ),
@@ -163,50 +158,10 @@ class NewTrackScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-                ),
-                SizedBox(
-                  height: 0,
-                  // width: 200,
-                  child: SingleChildScrollView(
-                    child: SizedBox(
-                      width: constraints.maxWidth,
-                      height: constraints.maxHeight / 3,
-                      child: RepaintBoundary(
-                        key: Theme.of(context).colorScheme.brightness == Brightness.dark ? boundaryKeyLight : boundaryKeyDark,
-                        child: FlutterMap(
-                          mapController: mapController,
-                          options: MapOptions(
-                            initialCenter: trackBounds.center,
-                            initialZoom: Track.fitBoundsFromTrackData(trackBounds, constraints.biggest),
-                            interactionOptions: const InteractionOptions(
-                              flags: InteractiveFlag.none,
-                            ),
-                          ),
-                          children: [
-                            TileLayer(
-                              urlTemplate: Theme.of(context).colorScheme.brightness == Brightness.dark
-                                  ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
-                                  : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-                              maxZoom: 19,
-                            ),
-                            PolylineLayer(
-                              polylines: [
-                                Polyline(
-                                  points: points,
-                                  strokeWidth: 6,
-                                  color: dialogPickerColor,
-                                ),
-                              ],
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          }),
+                ],
+              );
+            },
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -215,23 +170,13 @@ class NewTrackScreen extends ConsumerWidget {
         foregroundColor: Colors.white,
         onPressed: () async {
           if (formKey.currentState!.validate()) {
-            final boundaryLight = boundaryKeyLight.currentContext!.findRenderObject() as RenderRepaintBoundary;
-            final imageLight = await boundaryLight.toImage();
-            final lightByteData = await imageLight.toByteData(format: ImageByteFormat.png);
-            Uint8List lightTrackImage = lightByteData!.buffer.asUint8List();
-
-            final boundaryDark = boundaryKeyDark.currentContext!.findRenderObject() as RenderRepaintBoundary;
-            final imageDark = await boundaryDark.toImage();
-            final darkByteData = await imageDark.toByteData(format: ImageByteFormat.png);
-            Uint8List darkTrackImage = darkByteData!.buffer.asUint8List();
-
             final track = Track(
               id: const Uuid().v4(),
               name: nameController.text,
               trackData: trackData,
               points: points,
-              imageLight: lightTrackImage,
-              imageDark: darkTrackImage,
+              color: dialogPickerColor,
+              distance: calculateTrackDistance(points),
             );
 
             ref.read(tracksProvider.notifier).addTrack(track);
