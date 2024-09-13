@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:flex_color_picker/flex_color_picker.dart';
@@ -9,7 +8,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:roadless/src/models/track.dart';
 import 'package:roadless/src/providers/color_provider.dart';
-import 'package:roadless/src/providers/shared_preferences_provider.dart';
 import 'package:roadless/src/providers/tracks_provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -20,7 +18,6 @@ class NewTrackScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sharedPreferences = ref.watch(sharedPreferencesProvider);
     late Color dialogPickerColor;
     dialogPickerColor = ref.watch(colorProvider);
 
@@ -169,7 +166,7 @@ class NewTrackScreen extends ConsumerWidget {
                 ),
                 SizedBox(
                   height: 0,
-                  width: 200,
+                  // width: 200,
                   child: SingleChildScrollView(
                     child: SizedBox(
                       width: constraints.maxWidth,
@@ -236,14 +233,6 @@ class NewTrackScreen extends ConsumerWidget {
               imageLight: lightTrackImage,
               imageDark: darkTrackImage,
             );
-            // String? tracksList = sharedPreferences.getString("tracks");
-            // if (tracksList != null) {
-            //   List<String> tracks = List<String>.from(jsonDecode(tracksList));
-            //   tracks.add(jsonEncode(track.toJson()));
-            //   sharedPreferences.setString("tracks", jsonEncode(tracks));
-            // } else {
-            //   sharedPreferences.setString("tracks", jsonEncode([track.toJson()]));
-            // }
 
             ref.read(tracksProvider.notifier).addTrack(track);
             // ignore: use_build_context_synchronously

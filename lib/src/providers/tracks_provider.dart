@@ -1,30 +1,40 @@
-import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:roadless/src/models/track.dart';
-import 'package:roadless/src/providers/shared_preferences_provider.dart';
+import 'package:uuid/uuid.dart';
 
 class TracksNotifier extends StateNotifier<List<Track>> {
   TracksNotifier(this.ref) : super([]) {
-    // _initializeRules();
+    _initializeRules();
   }
 
   final Ref ref;
   Track? previousTrack;
 
-  void _initializeRules() {
-    final sharedPreferences = ref.watch(sharedPreferencesProvider);
-    String? tracksList = sharedPreferences.getString("tracks");
-    if (tracksList != null) {
-      List<String> tracksData = List<String>.from(jsonDecode(tracksList));
-      List<Track> track = tracksData
-          .map(
-            (e) => Track.fromJson(jsonDecode(e)),
-          )
-          .toList();
-      state = track;
+  void _initializeRules() async {
+    File trackFile = File('assets/tracks/test_track.gpx');
+
+    List<Track> dummyTracks = [];
+
+    List<LatLng> points = Track.getTrackPoints(
+      await trackFile.readAsString(),
+    );
+    String trackData = await trackFile.readAsString();
+
+    for (int i = 0; i < 20; i++) {
+      Track track = Track(
+        id: const Uuid().v4(),
+        name: 'Test Track $i',
+        trackData: trackData,
+        points: points,
+      );
+
+      dummyTracks.add(track);
     }
+    state = dummyTracks;
   }
 
   List<Track> getTracks() {

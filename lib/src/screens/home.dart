@@ -37,6 +37,7 @@ class HomeScreen extends ConsumerWidget {
           children: [
             Expanded(
               child: ListView.separated(
+                padding: const EdgeInsets.only(bottom: 80),
                 itemCount: tracks.length,
                 separatorBuilder: (BuildContext context, int index) {
                   return const SizedBox(
@@ -116,37 +117,6 @@ class HomeScreen extends ConsumerWidget {
                                 )
                           ],
                         ),
-                        // title: Text(tracks[index].name),
-                        // subtitle: Text(
-                        //   tracks[index].id,
-                        //   style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Colors.grey[600]),
-                        // ),
-                        // trailing: Theme.of(context).colorScheme.brightness == Brightness.light
-                        //     ? tracks[index].imageLight != null
-                        //         ? Image.memory(
-                        //             tracks[index].imageLight!,
-                        //             fit: BoxFit.cover,
-                        //           )
-                        //         : null
-                        //     : tracks[index].imageDark != null
-                        //         ? Image.memory(
-                        //             tracks[index].imageDark!,
-                        //             fit: BoxFit.cover,
-                        //           )
-                        //         : null,
-                        // shape: RoundedRectangleBorder(
-                        //   borderRadius: BorderRadius.circular(10.0),
-                        // ),
-                        // onTap: () {
-                        //   Navigator.push(
-                        //     context,
-                        //     MaterialPageRoute(
-                        //       builder: (context) => TrackDetailsScreen(
-                        //         track: tracks[index],
-                        //       ),
-                        //     ),
-                        //   );
-                        // },
                       ),
                     ),
                   );
