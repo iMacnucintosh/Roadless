@@ -23,12 +23,13 @@ class HomeScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text("Roadless"),
         actions: [
-          Switch(
-            value: ref.watch(isDarkModeProvider),
-            onChanged: (value) {
-              sharedPreferences.setBool("is_dark_mode", value);
-              ref.read(isDarkModeProvider.notifier).update((state) => value);
+          IconButton(
+            onPressed: () {
+              bool newThemeStyle = !ref.read(isDarkModeProvider);
+              sharedPreferences.setBool("is_dark_mode", newThemeStyle);
+              ref.read(isDarkModeProvider.notifier).update((state) => newThemeStyle);
             },
+            icon: ref.read(isDarkModeProvider) ? const Icon(Icons.light_mode_outlined) : const Icon(Icons.dark_mode_outlined),
           ),
         ],
       ),
