@@ -1,5 +1,6 @@
-import 'dart:io';
+import 'dart:convert';
 import 'dart:math';
+import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:file_picker/file_picker.dart';
@@ -8,21 +9,19 @@ import 'package:gpx/gpx.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:roadless/src/models/waypoint.dart';
 
-Future<File?> pickFile() async {
-  FilePickerResult? result = await FilePicker.platform.pickFiles();
-  File? file;
+Future<Uint8List?> pickFile() async {
+  FilePickerResult? result = await FilePicker.platform.pickFiles(withData: true);
   if (result != null) {
-    file = File(result.files.single.path!);
+    return result.files.first.bytes;
   } else {
     return null;
   }
-  return file;
 }
 
 Future<String?> loadTrackData() async {
-  File? trackFile = await pickFile();
+  Uint8List? trackFile = await pickFile();
   if (trackFile != null) {
-    return await trackFile.readAsString();
+    return utf8.decode(trackFile);
   }
   return null;
 }
