@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:gpx/gpx.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:roadless/src/models/waypoint.dart';
 
 Future<File?> pickFile() async {
   FilePickerResult? result = await FilePicker.platform.pickFiles();
@@ -27,20 +28,31 @@ Future<String?> loadTrackData() async {
 }
 
 List<LatLng> getTrackPoints(String trackData) {
-  List<LatLng> points = [];
-  List<Wpt> wptPoints = [];
+  List<LatLng> trackPoints = [];
+  List<Wpt> points = [];
   Gpx track = GpxReader().fromString(trackData);
   if (track.rtes.isNotEmpty) {
-    wptPoints = track.rtes.first.rtepts;
+    points = track.rtes.first.rtepts;
   } else if (track.trks.isNotEmpty) {
-    wptPoints = track.trks.first.trksegs.first.trkpts;
+    points = track.trks.first.trksegs.first.trkpts;
   }
 
-  for (Wpt point in wptPoints) {
-    points.add(LatLng(point.lat!, point.lon!));
+  for (Wpt point in points) {
+    trackPoints.add(LatLng(point.lat!, point.lon!));
   }
 
-  return points;
+  return trackPoints;
+}
+
+List<Waypoint> getTrackwaypoints(String trackData) {
+  List<Waypoint> waypoints = [];
+  Gpx track = GpxReader().fromString(trackData);
+
+  for (Wpt point in track.wpts) {
+    waypoints.add(Waypoint(name: point.name ?? "", description: point.desc ?? "", location: LatLng(point.lat!, point.lon!)));
+  }
+
+  return waypoints;
 }
 
 String getTrackName(String trackData) {

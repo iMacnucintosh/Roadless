@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:roadless/src/models/waypoint.dart';
 
 class Track {
   Track({
@@ -9,6 +10,7 @@ class Track {
     required this.name,
     required this.trackData,
     required this.points,
+    this.waypoints = const [],
     this.color = Colors.blue,
     this.distance = 0.0,
   });
@@ -17,6 +19,7 @@ class Track {
   final String name;
   final String trackData;
   final List<LatLng> points;
+  final List<Waypoint> waypoints;
   final Color color;
   final double distance;
 
@@ -76,6 +79,18 @@ class Track {
       name: json['name'],
       trackData: json['trackData'],
       points: [...json['points'].map((e) => LatLng.fromJson(e))],
+    );
+  }
+
+  static Track copyWithTrack(Track track) {
+    return Track(
+      id: track.id,
+      name: track.name,
+      trackData: track.trackData,
+      points: track.points,
+      waypoints: track.waypoints,
+      color: track.color,
+      distance: track.distance,
     );
   }
 }

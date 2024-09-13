@@ -16,27 +16,37 @@ class TracksNotifier extends StateNotifier<List<Track>> {
   Track? previousTrack;
 
   void _initializeRules() async {
-    File trackFile = File('assets/tracks/test_track.gpx');
+    File trackFile = File('assets/tracks/track.gpx');
+    File burgalesaFile = File('assets/tracks/burgalesa.gpx');
 
     List<Track> dummyTracks = [];
 
-    List<LatLng> points = getTrackPoints(
-      await trackFile.readAsString(),
-    );
     String trackData = await trackFile.readAsString();
+    List<LatLng> points = getTrackPoints(trackData);
 
-    for (int i = 0; i < 2; i++) {
-      Track track = Track(
-          id: const Uuid().v4(),
-          name: 'Test Track $i',
-          trackData: trackData,
-          points: points,
-          distance: calculateTrackDistance(
-            points,
-          ));
+    String burgalesaData = await burgalesaFile.readAsString();
+    List<LatLng> burgalesaPoints = getTrackPoints(burgalesaData);
 
-      dummyTracks.add(track);
-    }
+    Track track = Track(
+      id: const Uuid().v4(),
+      name: getTrackName(trackData),
+      trackData: trackData,
+      points: points,
+      waypoints: getTrackwaypoints(trackData),
+      distance: calculateTrackDistance(points),
+    );
+
+    Track burgalesa = Track(
+      id: const Uuid().v4(),
+      name: getTrackName(burgalesaData),
+      trackData: trackData,
+      points: burgalesaPoints,
+      waypoints: getTrackwaypoints(burgalesaData),
+      distance: calculateTrackDistance(burgalesaPoints),
+    );
+
+    dummyTracks.add(track);
+    dummyTracks.add(burgalesa);
     state = dummyTracks;
   }
 

@@ -129,26 +129,6 @@ class HomeScreen extends ConsumerWidget {
                                 ],
                               ),
                             )
-                            // if (Theme.of(context).colorScheme.brightness == Brightness.light)
-                            //   if (tracks[index].imageLight != null)
-                            //     ClipRRect(
-                            //       borderRadius: const BorderRadius.only(topRight: Radius.circular(10), bottomRight: Radius.circular(10)),
-                            //       child: Image.memory(
-                            //         height: 60,
-                            //         tracks[index].imageLight!,
-                            //         fit: BoxFit.cover,
-                            //       ),
-                            //     ),
-                            // if (Theme.of(context).colorScheme.brightness == Brightness.dark)
-                            //   if (tracks[index].imageDark != null)
-                            //     ClipRRect(
-                            //       borderRadius: const BorderRadius.only(topRight: Radius.circular(10), bottomRight: Radius.circular(10)),
-                            //       child: Image.memory(
-                            //         height: 60,
-                            //         tracks[index].imageDark!,
-                            //         fit: BoxFit.cover,
-                            //       ),
-                            //     )
                           ],
                         ),
                       ),
