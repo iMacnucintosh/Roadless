@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "940825212752",
+    "project_id": "roadless-project-145d9",
+    "storage_bucket": "roadless-project-145d9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:940825212752:android:4a021a7610d9f850a41e55",
+        "android_client_info": {
+          "package_name": "com.example.roadless"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFbCMV-ixwLRUkvfaZ-Kar-NGAHp2rRsE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

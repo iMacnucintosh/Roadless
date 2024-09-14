@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:roadless/src/constants/theme.dart';
@@ -9,6 +10,7 @@ import 'package:roadless/src/screens/home.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final sharedPreferences = await SharedPreferences.getInstance();
+  await Firebase.initializeApp();
   runApp(
     ProviderScope(
       overrides: [
