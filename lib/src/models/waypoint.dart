@@ -13,4 +13,12 @@ class Waypoint {
   final String description;
   final LatLng location;
   final IconData icon;
+
+  Map<String, dynamic> toJson() {
+    return {
+      "name": name,
+      "description": description,
+      "location": location.toJson(),
+    };
+  }
 }

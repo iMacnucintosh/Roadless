@@ -1,10 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:roadless/src/Utils/logger.dart';
 import 'package:roadless/src/models/track.dart';
+import 'package:roadless/src/providers/cloud_firestore_provider.dart';
 import 'package:roadless/src/providers/color_provider.dart';
+import 'package:roadless/src/providers/google_auth_provider.dart';
 import 'package:roadless/src/providers/tracks_provider.dart';
 import 'package:roadless/src/Utils/utils.dart';
 import 'package:uuid/uuid.dart';
@@ -180,6 +184,24 @@ class NewTrackScreen extends ConsumerWidget {
             );
 
             ref.read(tracksProvider.notifier).addTrack(track);
+
+            final firestore = ref.watch(cloudFirestoreProvider);
+            final user = ref.watch(googleUserProvider);
+
+            if (user != null) {
+              final userFirestore = <String, dynamic>{"uuid": user.uid};
+              try {
+                await firestore.collection("users").add(userFirestore);
+              } catch (e) {
+                logger.e(e);
+              }
+
+              // CollectionReference tracksRef = firestore.collection('users').doc(user.uid).collection('tracks');
+
+              // DocumentReference trackDocRef = tracksRef.doc(track.id);
+
+              // await trackDocRef.set({"name": track.name});
+            }
             // ignore: use_build_context_synchronously
             Navigator.pop(context);
           }

@@ -18,10 +18,12 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     restoreGoogleSession(ref);
 
+    final user = ref.watch(googleUserProvider);
+
+    // if (user != null) setUpFirestore(user, ref);
+
     final tracks = ref.watch(tracksProvider);
     final sharedPreferences = ref.watch(sharedPreferencesProvider);
-
-    final user = ref.watch(googleUserProvider);
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
@@ -52,13 +54,13 @@ class HomeScreen extends ConsumerWidget {
                         content: SingleChildScrollView(
                           child: Column(
                             children: [
-                              Row(
+                              Column(
                                 children: [
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(50.0),
                                     child: Image.network(user.photoURL ?? ""),
                                   ),
-                                  const SizedBox(width: 20),
+                                  const SizedBox(height: 20),
                                   Text(user.email ?? "", style: Theme.of(context).textTheme.bodyLarge),
                                 ],
                               ),

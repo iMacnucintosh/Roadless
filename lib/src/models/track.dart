@@ -69,7 +69,10 @@ class Track {
       'id': id,
       'name': name,
       'trackData': trackData,
-      'points': points.map((e) => e.toJson()).toList(),
+      'points': points.map((point) => point.toJson()).toList(),
+      'waypoints': waypoints.map((waypoint) => waypoint.toJson()).toList(),
+      'color': color.value,
+      'distance': distance,
     };
   }
 

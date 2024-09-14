@@ -18,7 +18,7 @@ jobs:
       - run: flutter --version
       - run: dart pub cache clean
       - run: flutter pub get
-      - run: flutter build web --web-renderer canvaskit --release --base-href="/"  # TODO: Revisar
+      - run: flutter build web --web-renderer canvaskit --release
 
       - uses: peaceiris/actions-gh-pages@v3
         with:
