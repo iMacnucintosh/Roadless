@@ -281,7 +281,7 @@ class NewTrackScreen extends ConsumerWidget {
                 logger.e(e);
               }
             }
-            ref.read(isLoadingProvider.notifier).state = true;
+            ref.read(isLoadingProvider.notifier).state = false;
             Navigator.pop(context);
           }
         },
