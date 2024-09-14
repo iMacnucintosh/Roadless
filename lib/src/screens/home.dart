@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:roadless/src/providers/google_auth_provider.dart';
 import 'package:roadless/src/providers/shared_preferences_provider.dart';
 import 'package:roadless/src/providers/theme_provider.dart';
 import 'package:roadless/src/providers/tracks_provider.dart';
@@ -30,6 +31,20 @@ class HomeScreen extends ConsumerWidget {
               ref.read(isDarkModeProvider.notifier).update((state) => newThemeStyle);
             },
             icon: ref.read(isDarkModeProvider) ? const Icon(Icons.light_mode_outlined) : const Icon(Icons.dark_mode_outlined),
+          ),
+          IconButton(
+            onPressed: () async {
+              try {
+                final userCredential = await signInWithGoogle();
+                final user = userCredential.user;
+                // Handle successful sign-in
+                print('Signed in with Google: ${user?.displayName}');
+              } catch (e) {
+                // Handle sign-in errors
+                print('Error signing in with Google: $e');
+              }
+            },
+            icon: const Icon(Icons.login_outlined),
           ),
         ],
       ),

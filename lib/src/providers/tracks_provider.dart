@@ -16,37 +16,37 @@ class TracksNotifier extends StateNotifier<List<Track>> {
   Track? previousTrack;
 
   void _initializeRules() async {
-    File trackFile = File('assets/tracks/track.gpx');
-    File burgalesaFile = File('assets/tracks/burgalesa.gpx');
+    // File trackFile = File('assets/tracks/track.gpx');
+    // File burgalesaFile = File('assets/tracks/burgalesa.gpx');
 
     List<Track> dummyTracks = [];
 
-    String trackData = await trackFile.readAsString();
-    List<LatLng> points = getTrackPoints(trackData);
+    // String trackData = await trackFile.readAsString();
+    // List<LatLng> points = getTrackPoints(trackData);
 
-    String burgalesaData = await burgalesaFile.readAsString();
-    List<LatLng> burgalesaPoints = getTrackPoints(burgalesaData);
+    // String burgalesaData = await burgalesaFile.readAsString();
+    // List<LatLng> burgalesaPoints = getTrackPoints(burgalesaData);
 
-    Track track = Track(
-      id: const Uuid().v4(),
-      name: getTrackName(trackData),
-      trackData: trackData,
-      points: points,
-      waypoints: getTrackwaypoints(trackData),
-      distance: calculateTrackDistance(points),
-    );
+    // Track track = Track(
+    //   id: const Uuid().v4(),
+    //   name: getTrackName(trackData),
+    //   trackData: trackData,
+    //   points: points,
+    //   waypoints: getTrackwaypoints(trackData),
+    //   distance: calculateTrackDistance(points),
+    // );
 
-    Track burgalesa = Track(
-      id: const Uuid().v4(),
-      name: getTrackName(burgalesaData),
-      trackData: trackData,
-      points: burgalesaPoints,
-      waypoints: getTrackwaypoints(burgalesaData),
-      distance: calculateTrackDistance(burgalesaPoints),
-    );
+    // Track burgalesa = Track(
+    //   id: const Uuid().v4(),
+    //   name: getTrackName(burgalesaData),
+    //   trackData: trackData,
+    //   points: burgalesaPoints,
+    //   waypoints: getTrackwaypoints(burgalesaData),
+    //   distance: calculateTrackDistance(burgalesaPoints),
+    // );
 
-    dummyTracks.add(track);
-    dummyTracks.add(burgalesa);
+    // dummyTracks.add(track);
+    // dummyTracks.add(burgalesa);
     state = dummyTracks;
   }
 
