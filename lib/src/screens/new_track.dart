@@ -6,7 +6,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:roadless/src/models/track.dart';
 import 'package:roadless/src/providers/color_provider.dart';
 import 'package:roadless/src/providers/tracks_provider.dart';
-import 'package:roadless/src/utils.dart';
+import 'package:roadless/src/Utils/utils.dart';
 import 'package:uuid/uuid.dart';
 
 class NewTrackScreen extends ConsumerWidget {

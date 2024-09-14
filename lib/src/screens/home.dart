@@ -9,37 +9,19 @@ import 'package:roadless/src/providers/theme_provider.dart';
 import 'package:roadless/src/providers/tracks_provider.dart';
 import 'package:roadless/src/screens/track_details.dart';
 import 'package:roadless/src/screens/new_track.dart';
-import 'package:roadless/src/utils.dart';
+import 'package:roadless/src/Utils/utils.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    restoreGoogleSession(ref);
+
     final tracks = ref.watch(tracksProvider);
     final sharedPreferences = ref.watch(sharedPreferencesProvider);
 
     final user = ref.watch(googleUserProvider);
-
-    final isGoogleSignIn = ref.watch(isGoogleSignInProvider);
-
-    void signInGoogle() async {
-      try {
-        final userCredential = await signInWithGoogle();
-        final user = userCredential.user;
-        if (user != null) {
-          sharedPreferences.setBool("is_google_sign_in", true);
-          ref.read(googleUserProvider.notifier).update((state) => user);
-          ref.read(isGoogleSignInProvider.notifier).update((state) => true);
-        }
-      } catch (e) {
-        print('Error signing in with Google: $e');
-      }
-    }
-
-    if (isGoogleSignIn && user == null) {
-      signInGoogle();
-    }
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
@@ -85,7 +67,7 @@ class HomeScreen extends ConsumerWidget {
                                 children: [
                                   OutlinedButton(
                                     onPressed: () {
-                                      signOutFromGoogle();
+                                      signOutFromGoogle(ref);
                                       ref.read(googleUserProvider.notifier).update((state) => null);
                                       sharedPreferences.setBool("is_google_sign_in", false);
                                       ref.read(isGoogleSignInProvider.notifier).update((state) => false);
@@ -108,7 +90,7 @@ class HomeScreen extends ConsumerWidget {
           if (user == null)
             IconButton(
               onPressed: () async {
-                signInGoogle();
+                signInWithGoogle(ref);
               },
               icon: const Icon(Icons.login_outlined),
             ),
