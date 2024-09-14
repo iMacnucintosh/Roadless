@@ -8,7 +8,6 @@ class Track {
   Track({
     required this.id,
     required this.name,
-    required this.trackData,
     required this.points,
     this.waypoints = const [],
     this.color = Colors.blue,
@@ -17,7 +16,6 @@ class Track {
 
   final String id;
   final String name;
-  final String trackData;
   final List<LatLng> points;
   final List<Waypoint> waypoints;
   final Color color;
@@ -68,7 +66,6 @@ class Track {
     return {
       'id': id,
       'name': name,
-      'trackData': trackData,
       'points': points.map((point) => point.toJson()).toList(),
       'waypoints': waypoints.map((waypoint) => waypoint.toJson()).toList(),
       'color': color.value,
@@ -80,23 +77,10 @@ class Track {
     return Track(
       id: json['id'],
       name: json['name'],
-      trackData: json['trackData'],
       points: [...json['points'].map((e) => LatLng.fromJson(e))],
       waypoints: [...json['waypoints'].map((e) => Waypoint.fromJson(e))],
       color: Color(json['color']),
       distance: json['distance'],
-    );
-  }
-
-  static Track copyWithTrack(Track track) {
-    return Track(
-      id: track.id,
-      name: track.name,
-      trackData: track.trackData,
-      points: track.points,
-      waypoints: track.waypoints,
-      color: track.color,
-      distance: track.distance,
     );
   }
 }

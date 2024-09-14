@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:roadless/src/models/track.dart';
 import 'package:roadless/src/providers/google_auth_provider.dart';
 import 'package:roadless/src/providers/loading_provider.dart';
 import 'package:roadless/src/providers/shared_preferences_provider.dart';
@@ -51,7 +52,7 @@ class HomeScreen extends ConsumerWidget {
                       return AlertDialog(
                         title: SizedBox(
                           width: 500,
-                          child: Text(user.displayName!),
+                          child: Text(user.displayName!, style: Theme.of(context).textTheme.titleLarge),
                         ),
                         content: SingleChildScrollView(
                           child: Column(
@@ -103,7 +104,7 @@ class HomeScreen extends ConsumerWidget {
       body: Stack(
         children: [
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
                 Expanded(
@@ -112,13 +113,14 @@ class HomeScreen extends ConsumerWidget {
                     itemCount: tracks.length,
                     separatorBuilder: (BuildContext context, int index) {
                       return const SizedBox(
-                        height: 5,
+                        height: 8,
                       );
                     },
                     itemBuilder: (context, index) {
                       MapController mapController = MapController();
+                      Track track = tracks[index];
                       return Dismissible(
-                        key: Key(tracks[index].id),
+                        key: Key(track.id),
                         direction: DismissDirection.endToStart,
                         background: Container(
                           alignment: Alignment.centerRight,
@@ -129,9 +131,9 @@ class HomeScreen extends ConsumerWidget {
                           ),
                         ),
                         onDismissed: (direction) {
-                          ref.read(tracksProvider.notifier).deleteTrack(tracks[index]);
+                          ref.read(tracksProvider.notifier).deleteTrack(track);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("${tracks[index].name} eliminada")),
+                            SnackBar(content: Text("${track.name} eliminada")),
                           );
                         },
                         child: InkWell(
@@ -141,7 +143,7 @@ class HomeScreen extends ConsumerWidget {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => TrackDetailsScreen(
-                                  track: tracks[index],
+                                  track: track,
                                 ),
                               ),
                             );
@@ -154,27 +156,44 @@ class HomeScreen extends ConsumerWidget {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(tracks[index].name),
-                                      Text(
-                                        "${tracks[index].distance} km",
-                                        style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Colors.grey[600]),
-                                      )
-                                    ],
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.fromLTRB(20.0, 10.0, 30.0, 10.0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(track.name, style: Theme.of(context).textTheme.titleMedium),
+                                        const SizedBox(height: 10),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              "${track.distance} km",
+                                              style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Colors.grey[600]),
+                                            ),
+                                            Row(
+                                              children: [
+                                                const Icon(
+                                                  Icons.location_on_outlined,
+                                                  color: Colors.red,
+                                                ),
+                                                Text("${track.waypoints.length}", style: Theme.of(context).textTheme.titleMedium),
+                                              ],
+                                            )
+                                          ],
+                                        )
+                                      ],
+                                    ),
                                   ),
                                 ),
                                 SizedBox(
-                                  width: 80,
-                                  height: 50,
+                                  width: 150,
+                                  height: 100,
                                   child: FlutterMap(
                                     mapController: mapController,
                                     options: MapOptions(
-                                      initialCenter: tracks[index].getBounds().center,
-                                      initialZoom: fitBoundsFromTrackData(tracks[index].getBounds(), const Size(80, 180)),
+                                      initialCenter: track.getBounds().center,
+                                      initialZoom: fitBoundsFromTrackData(track.getBounds(), const Size(150, 200)),
                                       interactionOptions: const InteractionOptions(
                                         flags: InteractiveFlag.none,
                                       ),
@@ -189,9 +208,9 @@ class HomeScreen extends ConsumerWidget {
                                       PolylineLayer(
                                         polylines: [
                                           Polyline(
-                                            points: tracks[index].points,
+                                            points: track.points,
                                             strokeWidth: 2,
-                                            color: tracks[index].color,
+                                            color: track.color,
                                           ),
                                         ],
                                       )

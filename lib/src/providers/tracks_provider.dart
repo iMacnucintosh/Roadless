@@ -4,12 +4,12 @@ import 'package:roadless/src/providers/cloud_firestore_provider.dart';
 
 class TracksNotifier extends StateNotifier<List<Track>> {
   TracksNotifier(this.ref) : super([]) {
-    _getRulesFromFirestore();
+    getRulesFromFirestore();
   }
 
   final Ref ref;
 
-  void _getRulesFromFirestore() async {
+  void getRulesFromFirestore() async {
     state = await ref.read(cloudFirestoreProvider.notifier).getTracks();
   }
 

@@ -254,7 +254,6 @@ class NewTrackScreen extends ConsumerWidget {
             final track = Track(
               id: const Uuid().v4(),
               name: nameController.text,
-              trackData: trackData,
               points: points,
               waypoints: getTrackwaypoints(trackData),
               color: dialogPickerColor,
