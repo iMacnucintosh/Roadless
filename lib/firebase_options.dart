@@ -47,6 +47,7 @@ class DefaultFirebaseOptions {
     projectId: 'roadless-project-145d9',
     authDomain: 'roadless-project-145d9.firebaseapp.com',
     storageBucket: 'roadless-project-145d9.appspot.com',
+    databaseURL: 'https://roadless-project-145d9-default-rtdb.europe-west1.firebasedatabase.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
@@ -55,6 +56,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '940825212752',
     projectId: 'roadless-project-145d9',
     storageBucket: 'roadless-project-145d9.appspot.com',
+    databaseURL: 'https://roadless-project-145d9-default-rtdb.europe-west1.firebasedatabase.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
@@ -64,6 +66,7 @@ class DefaultFirebaseOptions {
     projectId: 'roadless-project-145d9',
     storageBucket: 'roadless-project-145d9.appspot.com',
     iosBundleId: 'com.example.roadless',
+    databaseURL: 'https://roadless-project-145d9-default-rtdb.europe-west1.firebasedatabase.app',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -73,6 +76,7 @@ class DefaultFirebaseOptions {
     projectId: 'roadless-project-145d9',
     storageBucket: 'roadless-project-145d9.appspot.com',
     iosBundleId: 'com.example.roadless',
+    databaseURL: 'https://roadless-project-145d9-default-rtdb.europe-west1.firebasedatabase.app',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
@@ -82,5 +86,6 @@ class DefaultFirebaseOptions {
     projectId: 'roadless-project-145d9',
     authDomain: 'roadless-project-145d9.firebaseapp.com',
     storageBucket: 'roadless-project-145d9.appspot.com',
+    databaseURL: 'https://roadless-project-145d9-default-rtdb.europe-west1.firebasedatabase.app',
   );
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:roadless/src/Utils/logger.dart';
 import 'package:roadless/src/providers/shared_preferences_provider.dart';
+import 'package:roadless/src/providers/tracks_provider.dart';
 
 Future<UserCredential> signInWithGoogle(WidgetRef ref) async {
   final GoogleSignInAccount? googleUser = await GoogleSignIn().signInSilently();
@@ -24,6 +25,8 @@ Future<UserCredential> signInWithGoogle(WidgetRef ref) async {
     // Actualizar el estado del provider
     ref.read(googleUserProvider.notifier).state = userCredential.user;
 
+    ref.read(tracksProvider.notifier).getTracks();
+
     return userCredential;
   } else {
     // Si no hay una sesión de Google previa, realizar el proceso normal de signIn
@@ -43,6 +46,7 @@ Future<UserCredential> signInWithGoogle(WidgetRef ref) async {
       // Actualizar el estado del provider
       ref.read(googleUserProvider.notifier).state = userCredential.user;
 
+      ref.read(tracksProvider.notifier).getTracks();
       return userCredential;
     } else {
       throw 'Google sign-in cancelled';
@@ -60,6 +64,7 @@ Future<void> signOutFromGoogle(WidgetRef ref) async {
   await sharedPreferences.setBool("is_google_sign_in", false);
 
   ref.read(googleUserProvider.notifier).state = null;
+  ref.read(tracksProvider.notifier).clearTracks();
 }
 
 final googleUserProvider = StateProvider<User?>((ref) {

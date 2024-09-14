@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "940825212752",
+    "firebase_url": "https://roadless-project-145d9-default-rtdb.europe-west1.firebasedatabase.app",
     "project_id": "roadless-project-145d9",
     "storage_bucket": "roadless-project-145d9.appspot.com"
   },
@@ -12,7 +13,12 @@
           "package_name": "com.example.roadless"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "940825212752-d30g8kg9gn3nvcmelhj9980e60ff087o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBFbCMV-ixwLRUkvfaZ-Kar-NGAHp2rRsE"
@@ -20,7 +26,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "940825212752-d30g8kg9gn3nvcmelhj9980e60ff087o.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "940825212752-kpcfttec14096sbkbuiose5iq7404f7p.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.roadless"
+              }
+            }
+          ]
         }
       }
     }

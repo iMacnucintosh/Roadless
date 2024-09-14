@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +11,7 @@ import 'package:roadless/src/models/track.dart';
 import 'package:roadless/src/providers/cloud_firestore_provider.dart';
 import 'package:roadless/src/providers/color_provider.dart';
 import 'package:roadless/src/providers/google_auth_provider.dart';
+import 'package:roadless/src/providers/loading_provider.dart';
 import 'package:roadless/src/providers/tracks_provider.dart';
 import 'package:roadless/src/Utils/utils.dart';
 import 'package:uuid/uuid.dart';
@@ -22,6 +25,7 @@ class NewTrackScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     late Color dialogPickerColor;
     dialogPickerColor = ref.watch(colorProvider);
+    final isLoading = ref.watch(isLoadingProvider);
 
     final formKey = GlobalKey<FormState>();
     List<LatLng> points = getTrackPoints(trackData);
@@ -93,80 +97,152 @@ class NewTrackScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Nuevo track'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: formKey,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return Column(
-                children: [
-                  TextFormField(
-                    validator: (value) {
-                      if (value!.isEmpty) {
-                        return 'Nombre del track';
-                      }
-                      return null;
-                    },
-                    controller: nameController,
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: formKey,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return Column(
                     children: [
-                      const Text("Color: "),
-                      ColorIndicator(
-                        width: 55,
-                        height: 32,
-                        borderRadius: 30,
-                        color: dialogPickerColor,
-                        onSelectFocus: false,
-                        onSelect: () async {
-                          final Color colorBeforeDialog = dialogPickerColor;
-                          if (!(await colorPickerDialog())) {
-                            dialogPickerColor = colorBeforeDialog;
+                      TextFormField(
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Nombre del track';
                           }
+                          return null;
                         },
+                        controller: nameController,
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: constraints.maxWidth,
-                    height: constraints.maxHeight / 3,
-                    child: FlutterMap(
-                      mapController: mapController,
-                      options: MapOptions(
-                        initialCenter: trackBounds.center,
-                        initialZoom: fitBoundsFromTrackData(trackBounds, constraints.biggest),
-                        interactionOptions: const InteractionOptions(
-                          flags: InteractiveFlag.none,
-                        ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text("Color: "),
+                          ColorIndicator(
+                            width: 55,
+                            height: 32,
+                            borderRadius: 30,
+                            color: dialogPickerColor,
+                            onSelectFocus: false,
+                            onSelect: () async {
+                              final Color colorBeforeDialog = dialogPickerColor;
+                              if (!(await colorPickerDialog())) {
+                                dialogPickerColor = colorBeforeDialog;
+                              }
+                            },
+                          ),
+                        ],
                       ),
-                      children: [
-                        TileLayer(
-                          urlTemplate: Theme.of(context).colorScheme.brightness == Brightness.light
-                              ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
-                              : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-                          maxZoom: 19,
-                        ),
-                        PolylineLayer(
-                          polylines: [
-                            Polyline(
-                              points: points,
-                              strokeWidth: 6,
-                              color: dialogPickerColor,
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: constraints.maxWidth,
+                        height: constraints.maxHeight / 2,
+                        child: FlutterMap(
+                          mapController: mapController,
+                          options: MapOptions(
+                            initialCenter: trackBounds.center,
+                            initialZoom: fitBoundsFromTrackData(trackBounds, constraints.biggest),
+                          ),
+                          children: [
+                            TileLayer(
+                              urlTemplate: Theme.of(context).colorScheme.brightness == Brightness.light
+                                  ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+                                  : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+                              maxZoom: 19,
+                            ),
+                            PolylineLayer(
+                              polylines: [
+                                Polyline(
+                                  points: points,
+                                  strokeWidth: 6,
+                                  color: dialogPickerColor,
+                                ),
+                              ],
+                            ),
+                            MarkerLayer(
+                              markers: getTrackwaypoints(trackData)
+                                  .map(
+                                    (waypoint) => Marker(
+                                      width: 80.0,
+                                      height: 80.0,
+                                      point: waypoint.location,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          showModalBottomSheet(
+                                            context: context,
+                                            builder: (BuildContext context) {
+                                              return LayoutBuilder(
+                                                builder: (context, constraints) {
+                                                  return Row(
+                                                    mainAxisAlignment: MainAxisAlignment.center,
+                                                    children: [
+                                                      Column(
+                                                        children: [
+                                                          const SizedBox(width: 100, child: Divider()),
+                                                          SizedBox(
+                                                            width: constraints.maxWidth,
+                                                            child: Padding(
+                                                              padding: const EdgeInsets.all(16.0),
+                                                              child: Column(
+                                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                                mainAxisAlignment: MainAxisAlignment.start,
+                                                                children: [
+                                                                  Text(waypoint.name, style: Theme.of(context).textTheme.titleLarge),
+                                                                  const SizedBox(height: 10),
+                                                                  Text(waypoint.description == "" ? "Sin descripción" : waypoint.description),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            },
+                                          );
+                                        },
+                                        child: const Icon(
+                                          Icons.location_pin,
+                                          color: Colors.red,
+                                          size: 40.0,
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
                             ),
                           ],
-                        )
-                      ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+          if (isLoading)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.4),
+                child: const Center(
+                  child: Card(
+                    child: SizedBox(
+                      width: 400,
+                      height: 200,
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
                     ),
                   ),
-                ],
-              );
-            },
-          ),
-        ),
+                ),
+              ),
+            ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         tooltip: "Añadir track",
@@ -174,11 +250,13 @@ class NewTrackScreen extends ConsumerWidget {
         foregroundColor: Colors.white,
         onPressed: () async {
           if (formKey.currentState!.validate()) {
+            ref.read(isLoadingProvider.notifier).state = true;
             final track = Track(
               id: const Uuid().v4(),
               name: nameController.text,
               trackData: trackData,
               points: points,
+              waypoints: getTrackwaypoints(trackData),
               color: dialogPickerColor,
               distance: calculateTrackDistance(points),
             );
@@ -189,20 +267,21 @@ class NewTrackScreen extends ConsumerWidget {
             final user = ref.watch(googleUserProvider);
 
             if (user != null) {
-              final userFirestore = <String, dynamic>{"uuid": user.uid};
               try {
-                await firestore.collection("users").add(userFirestore);
+                CollectionReference tracksRef = firestore.collection('users').doc(user.uid).collection('tracks');
+
+                DocumentReference trackDocRef = tracksRef.doc(track.id);
+
+                await trackDocRef.set(track.toJson());
               } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("No se ha podido guardar el track en la nube: $e")),
+                );
+
                 logger.e(e);
               }
-
-              // CollectionReference tracksRef = firestore.collection('users').doc(user.uid).collection('tracks');
-
-              // DocumentReference trackDocRef = tracksRef.doc(track.id);
-
-              // await trackDocRef.set({"name": track.name});
             }
-            // ignore: use_build_context_synchronously
+            ref.read(isLoadingProvider.notifier).state = true;
             Navigator.pop(context);
           }
         },

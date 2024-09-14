@@ -82,6 +82,9 @@ class Track {
       name: json['name'],
       trackData: json['trackData'],
       points: [...json['points'].map((e) => LatLng.fromJson(e))],
+      waypoints: [...json['waypoints'].map((e) => Waypoint.fromJson(e))],
+      color: Color(json['color']),
+      distance: json['distance'],
     );
   }
 

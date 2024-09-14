@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:roadless/src/providers/google_auth_provider.dart';
+import 'package:roadless/src/providers/loading_provider.dart';
 import 'package:roadless/src/providers/shared_preferences_provider.dart';
 import 'package:roadless/src/providers/theme_provider.dart';
 import 'package:roadless/src/providers/tracks_provider.dart';
@@ -17,13 +18,14 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     restoreGoogleSession(ref);
+    final tracks = ref.watch(tracksProvider);
 
     final user = ref.watch(googleUserProvider);
 
     // if (user != null) setUpFirestore(user, ref);
 
-    final tracks = ref.watch(tracksProvider);
     final sharedPreferences = ref.watch(sharedPreferencesProvider);
+    final isLoading = ref.watch(isLoadingProvider);
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
@@ -98,112 +100,133 @@ class HomeScreen extends ConsumerWidget {
             ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.only(bottom: 80),
-                itemCount: tracks.length,
-                separatorBuilder: (BuildContext context, int index) {
-                  return const SizedBox(
-                    height: 5,
-                  );
-                },
-                itemBuilder: (context, index) {
-                  MapController mapController = MapController();
-                  return Dismissible(
-                    key: Key(tracks[index].id),
-                    direction: DismissDirection.endToStart,
-                    background: Container(
-                      alignment: Alignment.centerRight,
-                      decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(10)),
-                      child: const Padding(
-                        padding: EdgeInsets.only(right: 8.0),
-                        child: Icon(Icons.delete, color: Colors.white),
-                      ),
-                    ),
-                    onDismissed: (direction) {
-                      ref.read(tracksProvider.notifier).removeTrack(tracks[index]);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("${tracks[index].name} eliminada")),
+      body: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                Expanded(
+                  child: ListView.separated(
+                    padding: const EdgeInsets.only(bottom: 80),
+                    itemCount: tracks.length,
+                    separatorBuilder: (BuildContext context, int index) {
+                      return const SizedBox(
+                        height: 5,
                       );
                     },
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(10),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => TrackDetailsScreen(
-                              track: tracks[index],
-                            ),
+                    itemBuilder: (context, index) {
+                      MapController mapController = MapController();
+                      return Dismissible(
+                        key: Key(tracks[index].id),
+                        direction: DismissDirection.endToStart,
+                        background: Container(
+                          alignment: Alignment.centerRight,
+                          decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(10)),
+                          child: const Padding(
+                            padding: EdgeInsets.only(right: 8.0),
+                            child: Icon(Icons.delete, color: Colors.white),
                           ),
-                        );
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface,
-                          borderRadius: BorderRadius.circular(10),
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(tracks[index].name),
-                                  Text(
-                                    "${tracks[index].distance} km",
-                                    style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Colors.grey[600]),
-                                  )
-                                ],
+                        onDismissed: (direction) {
+                          ref.read(tracksProvider.notifier).deleteTrack(tracks[index]);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("${tracks[index].name} eliminada")),
+                          );
+                        },
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(10),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => TrackDetailsScreen(
+                                  track: tracks[index],
+                                ),
                               ),
+                            );
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surface,
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            SizedBox(
-                              width: 80,
-                              height: 50,
-                              child: FlutterMap(
-                                mapController: mapController,
-                                options: MapOptions(
-                                  initialCenter: tracks[index].getBounds().center,
-                                  initialZoom: fitBoundsFromTrackData(tracks[index].getBounds(), const Size(80, 180)),
-                                  interactionOptions: const InteractionOptions(
-                                    flags: InteractiveFlag.none,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(tracks[index].name),
+                                      Text(
+                                        "${tracks[index].distance} km",
+                                        style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Colors.grey[600]),
+                                      )
+                                    ],
                                   ),
                                 ),
-                                children: [
-                                  TileLayer(
-                                    urlTemplate: Theme.of(context).colorScheme.brightness == Brightness.light
-                                        ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
-                                        : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-                                    maxZoom: 19,
-                                  ),
-                                  PolylineLayer(
-                                    polylines: [
-                                      Polyline(
-                                        points: tracks[index].points,
-                                        strokeWidth: 2,
-                                        color: tracks[index].color,
+                                SizedBox(
+                                  width: 80,
+                                  height: 50,
+                                  child: FlutterMap(
+                                    mapController: mapController,
+                                    options: MapOptions(
+                                      initialCenter: tracks[index].getBounds().center,
+                                      initialZoom: fitBoundsFromTrackData(tracks[index].getBounds(), const Size(80, 180)),
+                                      interactionOptions: const InteractionOptions(
+                                        flags: InteractiveFlag.none,
                                       ),
+                                    ),
+                                    children: [
+                                      TileLayer(
+                                        urlTemplate: Theme.of(context).colorScheme.brightness == Brightness.light
+                                            ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+                                            : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+                                        maxZoom: 19,
+                                      ),
+                                      PolylineLayer(
+                                        polylines: [
+                                          Polyline(
+                                            points: tracks[index].points,
+                                            strokeWidth: 2,
+                                            color: tracks[index].color,
+                                          ),
+                                        ],
+                                      )
                                     ],
-                                  )
-                                ],
-                              ),
-                            )
-                          ],
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
                         ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (isLoading)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.4),
+                child: const Center(
+                  child: Card(
+                    child: SizedBox(
+                      width: 400,
+                      height: 200,
+                      child: Center(
+                        child: CircularProgressIndicator(),
                       ),
                     ),
-                  );
-                },
+                  ),
+                ),
               ),
             ),
-          ],
-        ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         tooltip: "Añadir track",

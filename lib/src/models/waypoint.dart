@@ -21,4 +21,12 @@ class Waypoint {
       "location": location.toJson(),
     };
   }
+
+  factory Waypoint.fromJson(Map<String, dynamic> json) {
+    return Waypoint(
+      name: json["name"],
+      description: json["description"],
+      location: LatLng.fromJson(json["location"]),
+    );
+  }
 }
