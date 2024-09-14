@@ -1,11 +1,7 @@
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:roadless/src/models/track.dart';
-import 'package:roadless/src/utils.dart';
-import 'package:uuid/uuid.dart';
 
 class TracksNotifier extends StateNotifier<List<Track>> {
   TracksNotifier(this.ref) : super([]) {

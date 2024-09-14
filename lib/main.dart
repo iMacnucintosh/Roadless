@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:roadless/firebase_options.dart';
 import 'package:roadless/src/constants/theme.dart';
+import 'package:roadless/src/providers/google_auth_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:roadless/src/providers/shared_preferences_provider.dart';
 import 'package:roadless/src/providers/theme_provider.dart';
@@ -28,6 +29,8 @@ class Roadless extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     final isDarkMode = ref.watch(isDarkModeProvider);
+
+
 
     return MaterialApp(
       title: 'Roadless',

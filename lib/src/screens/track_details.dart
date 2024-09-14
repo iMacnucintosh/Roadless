@@ -83,7 +83,6 @@ class TrackDetailsScreenState extends State<TrackDetailsScreen> {
                                                       Text(waypoint.name, style: Theme.of(context).textTheme.titleLarge),
                                                       const SizedBox(height: 10),
                                                       Text(waypoint.description == "" ? "Sin descripción" : waypoint.description),
-                                                      
                                                     ],
                                                   ),
                                                 ),

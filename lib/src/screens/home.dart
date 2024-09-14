@@ -19,6 +19,28 @@ class HomeScreen extends ConsumerWidget {
     final tracks = ref.watch(tracksProvider);
     final sharedPreferences = ref.watch(sharedPreferencesProvider);
 
+    final user = ref.watch(googleUserProvider);
+
+    final isGoogleSignIn = ref.watch(isGoogleSignInProvider);
+
+    void signInGoogle() async {
+      try {
+        final userCredential = await signInWithGoogle();
+        final user = userCredential.user;
+        if (user != null) {
+          sharedPreferences.setBool("is_google_sign_in", true);
+          ref.read(googleUserProvider.notifier).update((state) => user);
+          ref.read(isGoogleSignInProvider.notifier).update((state) => true);
+        }
+      } catch (e) {
+        print('Error signing in with Google: $e');
+      }
+    }
+
+    if (isGoogleSignIn && user == null) {
+      signInGoogle();
+    }
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
       appBar: AppBar(
@@ -32,20 +54,64 @@ class HomeScreen extends ConsumerWidget {
             },
             icon: ref.read(isDarkModeProvider) ? const Icon(Icons.light_mode_outlined) : const Icon(Icons.dark_mode_outlined),
           ),
-          IconButton(
-            onPressed: () async {
-              try {
-                final userCredential = await signInWithGoogle();
-                final user = userCredential.user;
-                // Handle successful sign-in
-                print('Signed in with Google: ${user?.displayName}');
-              } catch (e) {
-                // Handle sign-in errors
-                print('Error signing in with Google: $e');
-              }
-            },
-            icon: const Icon(Icons.login_outlined),
-          ),
+          if (user != null)
+            Padding(
+              padding: const EdgeInsets.only(right: 10.0),
+              child: TextButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: SizedBox(
+                          width: 500,
+                          child: Text(user.displayName!),
+                        ),
+                        content: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(50.0),
+                                    child: Image.network(user.photoURL ?? ""),
+                                  ),
+                                  const SizedBox(width: 20),
+                                  Text(user.email ?? "", style: Theme.of(context).textTheme.bodyLarge),
+                                ],
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  OutlinedButton(
+                                    onPressed: () {
+                                      signOutFromGoogle();
+                                      ref.read(googleUserProvider.notifier).update((state) => null);
+                                      sharedPreferences.setBool("is_google_sign_in", false);
+                                      ref.read(isGoogleSignInProvider.notifier).update((state) => false);
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: const Text("Cerrar sesión"),
+                                  ),
+                                ],
+                              )
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+                child: Text(user.displayName!),
+              ),
+            ),
+          if (user == null)
+            IconButton(
+              onPressed: () async {
+                signInGoogle();
+              },
+              icon: const Icon(Icons.login_outlined),
+            ),
         ],
       ),
       body: Padding(
