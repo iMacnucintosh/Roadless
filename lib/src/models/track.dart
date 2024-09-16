@@ -2,6 +2,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:roadless/src/constants/enums.dart';
 import 'package:roadless/src/models/waypoint.dart';
 
 class Track {
@@ -12,14 +13,16 @@ class Track {
     this.waypoints = const [],
     this.color = Colors.blue,
     this.distance = 0.0,
+    this.activityType,
   });
 
-  final String id;
-  final String name;
-  final List<LatLng> points;
-  final List<Waypoint> waypoints;
-  final Color color;
-  final double distance;
+  String id;
+  String name;
+  List<LatLng> points;
+  List<Waypoint> waypoints;
+  Color color;
+  double distance;
+  ActivityType? activityType;
 
   LatLngBounds getBounds() {
     double minLat = double.infinity;
@@ -70,6 +73,7 @@ class Track {
       'waypoints': waypoints.map((waypoint) => waypoint.toJson()).toList(),
       'color': color.value,
       'distance': distance,
+      'activityType': activityType?.name,
     };
   }
 
@@ -81,6 +85,7 @@ class Track {
       waypoints: [...json['waypoints'].map((e) => Waypoint.fromJson(e))],
       color: Color(json['color']),
       distance: json['distance'],
+      activityType: json.containsKey('activityType') ? ActivityType.fromName(json["activityType"]) : null,
     );
   }
 }

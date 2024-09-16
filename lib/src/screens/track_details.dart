@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:roadless/src/constants/enums.dart';
 import 'package:roadless/src/models/track.dart';
+import 'package:roadless/src/providers/cloud_firestore_provider.dart';
 
-class TrackDetailsScreen extends StatefulWidget {
+class TrackDetailsScreen extends ConsumerStatefulWidget {
   final Track track;
-
   const TrackDetailsScreen({super.key, required this.track});
 
   @override
   TrackDetailsScreenState createState() => TrackDetailsScreenState();
 }
 
-class TrackDetailsScreenState extends State<TrackDetailsScreen> {
+class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
   late MapController _mapController;
   late LatLngBounds trackBounds;
 
@@ -37,7 +39,7 @@ class TrackDetailsScreenState extends State<TrackDetailsScreen> {
                 mapController: _mapController,
                 options: MapOptions(
                   initialCenter: trackBounds.center,
-                  initialZoom: widget.track.fitBounds(trackBounds, constraints.biggest),
+                  initialZoom: widget.track.fitBounds(trackBounds, Size(constraints.maxWidth, constraints.maxHeight - 200)),
                 ),
                 children: [
                   TileLayer(
@@ -114,10 +116,68 @@ class TrackDetailsScreenState extends State<TrackDetailsScreen> {
             left: 10,
             child: Card(
               child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  '${widget.track.distance} km',
-                  style: Theme.of(context).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold),
+                padding: const EdgeInsets.all(12.0),
+                child: Wrap(
+                  direction: Axis.vertical,
+                  spacing: 5,
+                  children: [
+                    Text(
+                      '${widget.track.distance} km',
+                      style: Theme.of(context).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    Row(
+                      children: [
+                        widget.track.activityType == null
+                            ? InkWell(
+                                onTap: () async {
+                                  ActivityType? activityType = await showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return AlertDialog(
+                                        content: SingleChildScrollView(
+                                          child: Center(
+                                            child: Wrap(
+                                              spacing: 20,
+                                              runSpacing: 20,
+                                              alignment: WrapAlignment.center,
+                                              children: ActivityType.values
+                                                  .map(
+                                                    (activityType) => IconButton(
+                                                      tooltip: activityType.label,
+                                                      icon: Icon(
+                                                        activityType.icon,
+                                                        size: 40,
+                                                      ),
+                                                      onPressed: () {
+                                                        Navigator.of(context).pop(activityType);
+                                                      },
+                                                    ),
+                                                  )
+                                                  .toList(),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                  if (activityType != null) {
+                                    widget.track.activityType = activityType;
+                                    ref.read(cloudFirestoreProvider.notifier).updateTrack(widget.track);
+                                    setState(() {});
+                                  }
+                                },
+                                child: const Text("Especificar actividad"),
+                              )
+                            : Row(
+                                children: [
+                                  Icon(widget.track.activityType!.icon),
+                                  const SizedBox(width: 5),
+                                  Text(widget.track.activityType!.label, style: Theme.of(context).textTheme.titleMedium),
+                                ],
+                              ),
+                      ],
+                    )
+                  ],
                 ),
               ),
             ),

@@ -29,6 +29,12 @@ class CloudFirestoreNotifier extends StateNotifier<FirebaseFirestore> {
       await state.collection("users").doc(user.uid).collection("tracks").doc(id).delete();
     }
   }
+  Future<void> updateTrack(Track track) async {
+    final user = ref.watch(googleUserProvider);
+    if (user != null) {
+      await state.collection("users").doc(user.uid).collection("tracks").doc(track.id).update(track.toJson());
+    }
+  }
 }
 
 final cloudFirestoreProvider = StateNotifierProvider<CloudFirestoreNotifier, FirebaseFirestore>((ref) {

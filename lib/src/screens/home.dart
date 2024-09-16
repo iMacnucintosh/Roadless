@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:roadless/src/constants/enums.dart';
 import 'package:roadless/src/models/track.dart';
 import 'package:roadless/src/providers/google_auth_provider.dart';
 import 'package:roadless/src/providers/loading_provider.dart';
@@ -13,20 +14,25 @@ import 'package:roadless/src/screens/track_details.dart';
 import 'package:roadless/src/screens/new_track.dart';
 import 'package:roadless/src/Utils/utils.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  HomeScreenState createState() => HomeScreenState();
+}
+
+class HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  Widget build(BuildContext context) {
     restoreGoogleSession(ref);
     final tracks = ref.watch(tracksProvider);
 
     final user = ref.watch(googleUserProvider);
 
-    // if (user != null) setUpFirestore(user, ref);
-
     final sharedPreferences = ref.watch(sharedPreferencesProvider);
     final isLoading = ref.watch(isLoadingProvider);
+
+    final tracksFilter = ref.watch(tracksFilterProvider);
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
@@ -107,6 +113,20 @@ class HomeScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
+                SegmentedButton(
+                  multiSelectionEnabled: false,
+                  segments: [
+                    const ButtonSegment(icon: Icon(Icons.clear_all_outlined), value: "all"),
+                    ...ActivityType.values.map(
+                      (e) => ButtonSegment(icon: Icon(e.icon), value: e.name),
+                    ),
+                  ],
+                  selected: {tracksFilter},
+                  onSelectionChanged: (values) {
+                    ref.read(tracksFilterProvider.notifier).state = values.first;
+                  },
+                ),
+                const SizedBox(height: 20),
                 Expanded(
                   child: ListView.separated(
                     padding: const EdgeInsets.only(bottom: 80),
@@ -146,7 +166,9 @@ class HomeScreen extends ConsumerWidget {
                                   track: track,
                                 ),
                               ),
-                            );
+                            ).then((value) {
+                              setState(() {});
+                            });
                           },
                           child: Container(
                             decoration: BoxDecoration(
@@ -172,14 +194,29 @@ class HomeScreen extends ConsumerWidget {
                                               style: Theme.of(context).textTheme.bodySmall!.copyWith(color: Colors.grey[600]),
                                             ),
                                             Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                               children: [
-                                                const Icon(
-                                                  Icons.location_on_outlined,
-                                                  color: Colors.red,
-                                                ),
-                                                Text("${track.waypoints.length}", style: Theme.of(context).textTheme.titleMedium),
+                                                if (track.activityType != null)
+                                                  Row(
+                                                    children: [
+                                                      Tooltip(
+                                                        message: track.activityType!.label,
+                                                        child: Icon(track.activityType!.icon, color: Theme.of(context).colorScheme.primary),
+                                                      ),
+                                                      const SizedBox(width: 5),
+                                                    ],
+                                                  ),
+                                                Row(
+                                                  children: [
+                                                    const Icon(
+                                                      Icons.location_on_outlined,
+                                                      color: Colors.red,
+                                                    ),
+                                                    Text("${track.waypoints.length}", style: Theme.of(context).textTheme.titleMedium),
+                                                  ],
+                                                )
                                               ],
-                                            )
+                                            ),
                                           ],
                                         )
                                       ],
@@ -193,7 +230,7 @@ class HomeScreen extends ConsumerWidget {
                                     mapController: mapController,
                                     options: MapOptions(
                                       initialCenter: track.getBounds().center,
-                                      initialZoom: fitBoundsFromTrackData(track.getBounds(), const Size(150, 200)),
+                                      initialZoom: fitBoundsFromTrackData(track.getBounds(), const Size(100, 70)),
                                       interactionOptions: const InteractionOptions(
                                         flags: InteractiveFlag.none,
                                       ),
