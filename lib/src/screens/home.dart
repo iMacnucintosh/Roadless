@@ -25,7 +25,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     restoreGoogleSession(ref);
-    final tracks = ref.watch(tracksProvider);
+    final tracks = ref.watch(filteredTracksByActivityProvider);
 
     final user = ref.watch(googleUserProvider);
 
@@ -115,7 +115,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
               children: [
                 SegmentedButton(
                   multiSelectionEnabled: false,
-                  selectedIcon: null,
+                  showSelectedIcon: false,
                   segments: [
                     const ButtonSegment(icon: Icon(Icons.clear_all_outlined), value: "all"),
                     ...ActivityType.values.map(
@@ -125,6 +125,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                   selected: {tracksFilter},
                   onSelectionChanged: (values) {
                     ref.read(tracksFilterProvider.notifier).state = values.first;
+                    ref.read(filteredTracksByActivityProvider.notifier).filterTracksByActivity();
                   },
                 ),
                 const SizedBox(height: 20),

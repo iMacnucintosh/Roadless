@@ -42,7 +42,28 @@ final tracksProvider = StateNotifierProvider<TracksNotifier, List<Track>>((ref) 
   return TracksNotifier(ref);
 });
 
-
 final tracksFilterProvider = StateProvider<String>((ref) {
   return "all";
+});
+
+class FilteredTracksByActivityNotifier extends StateNotifier<List<Track>> {
+  FilteredTracksByActivityNotifier(this.ref) : super([]) {
+    filterTracksByActivity();
+  }
+
+  final Ref ref;
+
+  void filterTracksByActivity() {
+    List<Track> tracks = ref.watch(tracksProvider);
+    String currentFilter = ref.watch(tracksFilterProvider);
+    if (currentFilter != "all") {
+      state =  tracks.where((track) => track.activityType?.name == currentFilter).toList();
+    } else {
+      state = tracks;
+    }
+  }
+}
+
+final filteredTracksByActivityProvider = StateNotifierProvider<FilteredTracksByActivityNotifier, List<Track>>((ref) {
+  return FilteredTracksByActivityNotifier(ref);
 });
