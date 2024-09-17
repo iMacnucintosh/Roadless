@@ -119,7 +119,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                   segments: [
                     const ButtonSegment(icon: Icon(Icons.clear_all_outlined), value: "all"),
                     ...ActivityType.values.map(
-                      (e) => ButtonSegment(icon: Icon(e.icon), value: e.name),
+                      (e) => ButtonSegment(icon: Icon(e.icon), value: e.name, tooltip: e.label),
                     ),
                   ],
                   selected: {tracksFilter},
