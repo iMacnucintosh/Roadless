@@ -115,6 +115,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
               children: [
                 SegmentedButton(
                   multiSelectionEnabled: false,
+                  selectedIcon: null,
                   segments: [
                     const ButtonSegment(icon: Icon(Icons.clear_all_outlined), value: "all"),
                     ...ActivityType.values.map(
