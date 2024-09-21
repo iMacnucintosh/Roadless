@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:roadless/src/constants/enums.dart';
 import 'package:roadless/src/models/track.dart';
@@ -44,6 +45,7 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
                 children: [
                   TileLayer(
                     urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    tileProvider: CancellableNetworkTileProvider(),
                     maxZoom: 19,
                   ),
                   PolylineLayer(

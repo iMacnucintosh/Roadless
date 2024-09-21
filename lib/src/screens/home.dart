@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:roadless/src/constants/enums.dart';
 import 'package:roadless/src/models/track.dart';
@@ -242,6 +243,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                                         urlTemplate: Theme.of(context).colorScheme.brightness == Brightness.light
                                             ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
                                             : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+                                        tileProvider: CancellableNetworkTileProvider(),
                                         maxZoom: 19,
                                       ),
                                       PolylineLayer(

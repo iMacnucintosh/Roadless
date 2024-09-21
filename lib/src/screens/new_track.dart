@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:roadless/src/Utils/logger.dart';
@@ -151,6 +152,7 @@ class NewTrackScreen extends ConsumerWidget {
                               urlTemplate: Theme.of(context).colorScheme.brightness == Brightness.light
                                   ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
                                   : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+                              tileProvider: CancellableNetworkTileProvider(),
                               maxZoom: 19,
                             ),
                             PolylineLayer(
