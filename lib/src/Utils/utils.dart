@@ -1,13 +1,16 @@
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
-import 'dart:ui';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flex_color_picker/flex_color_picker.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gpx/gpx.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:roadless/src/models/waypoint.dart';
+import 'package:roadless/src/providers/color_provider.dart';
 
 Future<Uint8List?> pickFile() async {
   FilePickerResult? result = await FilePicker.platform.pickFiles(withData: true);
@@ -129,4 +132,66 @@ double calculateTrackDistance(List<LatLng> points) {
 
 double _toRadians(double degrees) {
   return degrees * (pi / 180);
+}
+
+Future<bool> colorPickerDialog(BuildContext context, Color dialogPickerColor, WidgetRef ref, {Function? onColorChanged}) async {
+  return ColorPicker(
+    color: dialogPickerColor,
+    onColorChanged: (Color color) {
+      dialogPickerColor = color;
+      ref.read(colorProvider.notifier).update((state) => color);
+      if (onColorChanged != null) onColorChanged(color);
+    },
+    width: 40,
+    height: 40,
+    borderRadius: 4,
+    spacing: 5,
+    runSpacing: 5,
+    wheelDiameter: 155,
+    pickerTypeLabels: const {
+      ColorPickerType.primary: "Primarios",
+      ColorPickerType.accent: "Acento",
+      ColorPickerType.wheel: "Selector",
+    },
+    pickerTypeTextStyle: Theme.of(context).textTheme.labelLarge,
+    actionButtons: const ColorPickerActionButtons(
+      dialogOkButtonLabel: "Aceptar",
+      dialogCancelButtonLabel: "Cancelar",
+    ),
+    heading: Text(
+      'Selecciona un Color',
+      style: Theme.of(context).textTheme.titleMedium,
+    ),
+    subheading: Text(
+      'Puedes seleccionar una variante',
+      style: Theme.of(context).textTheme.titleMedium,
+    ),
+    wheelSubheading: Text(
+      'Selecciona un color y su variante',
+      style: Theme.of(context).textTheme.titleMedium,
+    ),
+    showMaterialName: true,
+    showColorName: true,
+    showColorCode: true,
+    copyPasteBehavior: const ColorPickerCopyPasteBehavior(
+      longPressMenu: true,
+    ),
+    materialNameTextStyle: Theme.of(context).textTheme.bodySmall,
+    colorNameTextStyle: Theme.of(context).textTheme.bodySmall,
+    colorCodeTextStyle: Theme.of(context).textTheme.bodyMedium,
+    colorCodePrefixStyle: Theme.of(context).textTheme.bodySmall,
+    selectedPickerTypeColor: Theme.of(context).colorScheme.primary,
+    pickersEnabled: const <ColorPickerType, bool>{
+      ColorPickerType.both: false,
+      ColorPickerType.primary: true,
+      ColorPickerType.accent: true,
+      ColorPickerType.bw: false,
+      ColorPickerType.custom: true,
+      ColorPickerType.wheel: true,
+    },
+  ).showPickerDialog(
+    context,
+    actionsPadding: const EdgeInsets.all(16),
+    constraints: const BoxConstraints(minHeight: 480, minWidth: 300, maxWidth: 320),
+  );
 }

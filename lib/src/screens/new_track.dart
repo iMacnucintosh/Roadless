@@ -33,66 +33,6 @@ class NewTrackScreen extends ConsumerWidget {
     TextEditingController nameController = TextEditingController(text: getTrackName(trackData));
     MapController mapController = MapController();
     LatLngBounds trackBounds = getBoundsFromTrackData(trackData);
-    Future<bool> colorPickerDialog() async {
-      return ColorPicker(
-        color: dialogPickerColor,
-        onColorChanged: (Color color) {
-          dialogPickerColor = color;
-          ref.read(colorProvider.notifier).update((state) => color);
-        },
-        width: 40,
-        height: 40,
-        borderRadius: 4,
-        spacing: 5,
-        runSpacing: 5,
-        wheelDiameter: 155,
-        pickerTypeLabels: const {
-          ColorPickerType.primary: "Primarios",
-          ColorPickerType.accent: "Acento",
-          ColorPickerType.wheel: "Selector",
-        },
-        pickerTypeTextStyle: Theme.of(context).textTheme.labelLarge,
-        actionButtons: const ColorPickerActionButtons(
-          dialogOkButtonLabel: "Aceptar",
-          dialogCancelButtonLabel: "Cancelar",
-        ),
-        heading: Text(
-          'Selecciona un Color',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        subheading: Text(
-          'Puedes seleccionar una variante',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        wheelSubheading: Text(
-          'Selecciona un color y su variante',
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        showMaterialName: true,
-        showColorName: true,
-        showColorCode: true,
-        copyPasteBehavior: const ColorPickerCopyPasteBehavior(
-          longPressMenu: true,
-        ),
-        materialNameTextStyle: Theme.of(context).textTheme.bodySmall,
-        colorNameTextStyle: Theme.of(context).textTheme.bodySmall,
-        colorCodeTextStyle: Theme.of(context).textTheme.bodyMedium,
-        colorCodePrefixStyle: Theme.of(context).textTheme.bodySmall,
-        selectedPickerTypeColor: Theme.of(context).colorScheme.primary,
-        pickersEnabled: const <ColorPickerType, bool>{
-          ColorPickerType.both: false,
-          ColorPickerType.primary: true,
-          ColorPickerType.accent: true,
-          ColorPickerType.bw: false,
-          ColorPickerType.custom: true,
-          ColorPickerType.wheel: true,
-        },
-      ).showPickerDialog(
-        context,
-        actionsPadding: const EdgeInsets.all(16),
-        constraints: const BoxConstraints(minHeight: 480, minWidth: 300, maxWidth: 320),
-      );
-    }
 
     return Scaffold(
       appBar: AppBar(
@@ -105,7 +45,7 @@ class NewTrackScreen extends ConsumerWidget {
             child: Form(
               key: formKey,
               child: LayoutBuilder(
-                builder: (context, constraints) {
+                builder: (ctx, constraints) {
                   return Column(
                     children: [
                       TextFormField(
@@ -130,7 +70,7 @@ class NewTrackScreen extends ConsumerWidget {
                             onSelectFocus: false,
                             onSelect: () async {
                               final Color colorBeforeDialog = dialogPickerColor;
-                              if (!(await colorPickerDialog())) {
+                              if (!(await colorPickerDialog(context, dialogPickerColor, ref))) {
                                 dialogPickerColor = colorBeforeDialog;
                               }
                             },
@@ -149,7 +89,7 @@ class NewTrackScreen extends ConsumerWidget {
                           ),
                           children: [
                             TileLayer(
-                              urlTemplate: Theme.of(context).colorScheme.brightness == Brightness.light
+                              urlTemplate: Theme.of(ctx).colorScheme.brightness == Brightness.light
                                   ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
                                   : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
                               tileProvider: CancellableNetworkTileProvider(),
@@ -174,7 +114,7 @@ class NewTrackScreen extends ConsumerWidget {
                                       child: GestureDetector(
                                         onTap: () {
                                           showModalBottomSheet(
-                                            context: context,
+                                            context: ctx,
                                             builder: (BuildContext context) {
                                               return LayoutBuilder(
                                                 builder: (context, constraints) {
@@ -209,7 +149,7 @@ class NewTrackScreen extends ConsumerWidget {
                                           );
                                         },
                                         child: const Icon(
-                                          Icons.location_pin,
+                                          Icons.location_on,
                                           color: Colors.red,
                                           size: 40.0,
                                         ),

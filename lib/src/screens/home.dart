@@ -6,6 +6,7 @@ import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_ti
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:roadless/src/constants/enums.dart';
 import 'package:roadless/src/models/track.dart';
+import 'package:roadless/src/providers/color_provider.dart';
 import 'package:roadless/src/providers/google_auth_provider.dart';
 import 'package:roadless/src/providers/loading_provider.dart';
 import 'package:roadless/src/providers/shared_preferences_provider.dart';
@@ -162,6 +163,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                         child: InkWell(
                           borderRadius: BorderRadius.circular(10),
                           onTap: () {
+                            ref.read(colorProvider.notifier).update((state) => track.color);
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -212,7 +214,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                                                 Row(
                                                   children: [
                                                     const Icon(
-                                                      Icons.location_on_outlined,
+                                                      Icons.location_on,
                                                       color: Colors.red,
                                                     ),
                                                     Text("${track.waypoints.length}", style: Theme.of(context).textTheme.titleMedium),

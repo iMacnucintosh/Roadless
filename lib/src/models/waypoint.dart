@@ -6,13 +6,13 @@ class Waypoint {
     required this.name,
     required this.description,
     required this.location,
-    this.icon = Icons.location_pin,
+    this.icon = Icons.location_on,
   });
 
-  final String name;
-  final String description;
-  final LatLng location;
-  final IconData icon;
+  String name;
+  String description;
+  LatLng location;
+  IconData icon;
 
   Map<String, dynamic> toJson() {
     return {
