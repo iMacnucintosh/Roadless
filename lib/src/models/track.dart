@@ -88,4 +88,39 @@ class Track {
       activityType: json.containsKey('activityType') ? ActivityType.fromName(json["activityType"]) : null,
     );
   }
+
+  String toGpx() {
+    final buffer = StringBuffer();
+    buffer.writeln('<?xml version="1.0" encoding="UTF-8"?>');
+    buffer.writeln('<gpx version="1.1" creator="Roadless" xmlns="http://www.topografix.com/GPX/1/1">');
+    buffer.writeln('<metadata>');
+    buffer.writeln('<name>$name</name>');
+    buffer.writeln('<desc>$name</desc>');
+    buffer.writeln('</metadata>');
+
+    buffer.writeln('<trk>');
+    buffer.writeln('<name>$name</name>');
+
+    buffer.writeln('<trkseg>');
+
+    for (final point in points) {
+      buffer.writeln('<trkpt lat="${point.latitude}" lon="${point.longitude}">');
+      buffer.writeln('<ele>0</ele>'); // TODO: Ver si es posible ajustar la elevación
+      buffer.writeln('</trkpt>');
+    }
+
+    buffer.writeln('</trkseg>');
+    buffer.writeln('</trk>');
+
+    for (final waypoint in waypoints) {
+      buffer.writeln('<wpt lat="${waypoint.location.latitude}" lon="${waypoint.location.longitude}">');
+      buffer.writeln('<name>${waypoint.name}</name>');
+      buffer.writeln('<desc>${waypoint.description}</desc>');
+      buffer.writeln('</wpt>');
+    }
+
+    buffer.writeln('</gpx>');
+
+    return buffer.toString();
+  }
 }

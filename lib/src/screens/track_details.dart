@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+
+import 'package:file_saver/file_saver.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -325,6 +328,18 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
             ),
           )
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        tooltip: "Exportar GPX",
+        onPressed: () async {
+          String trackData = widget.track.toGpx();
+          await FileSaver.instance.saveFile(
+            bytes: Uint8List.fromList(trackData.codeUnits),
+            name: widget.track.name,
+            ext: "gpx",
+          );
+        },
+        child: const Icon(Icons.ios_share),
       ),
     );
   }
