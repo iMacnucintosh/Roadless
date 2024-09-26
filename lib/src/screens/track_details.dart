@@ -127,7 +127,7 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
                   PolylineLayer(
                     polylines: [
                       Polyline(
-                        points: widget.track.points,
+                        points: widget.track.points.map((point) => point.latLng).toList(),
                         strokeWidth: 6,
                         color: dialogPickerColor,
                       ),

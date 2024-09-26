@@ -6,12 +6,14 @@ class Waypoint {
     required this.name,
     required this.description,
     required this.location,
+    this.elevation = 0,
     this.icon = Icons.location_on,
   });
 
   String name;
   String description;
   LatLng location;
+  double elevation;
   IconData icon;
 
   Map<String, dynamic> toJson() {
@@ -19,6 +21,7 @@ class Waypoint {
       "name": name,
       "description": description,
       "location": location.toJson(),
+      "elevation": elevation,
     };
   }
 
@@ -27,6 +30,7 @@ class Waypoint {
       name: json["name"],
       description: json["description"],
       location: LatLng.fromJson(json["location"]),
+      elevation: json["elevation"],
     );
   }
 }

@@ -9,6 +9,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gpx/gpx.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:roadless/src/models/location.dart';
 import 'package:roadless/src/models/waypoint.dart';
 import 'package:roadless/src/providers/color_provider.dart';
 
@@ -29,8 +30,8 @@ Future<String?> loadTrackData() async {
   return null;
 }
 
-List<LatLng> getTrackPoints(String trackData) {
-  List<LatLng> trackPoints = [];
+List<Location> getTrackPoints(String trackData) {
+  List<Location> trackPoints = [];
   List<Wpt> points = [];
   Gpx track = GpxReader().fromString(trackData);
   if (track.rtes.isNotEmpty) {
@@ -40,7 +41,12 @@ List<LatLng> getTrackPoints(String trackData) {
   }
 
   for (Wpt point in points) {
-    trackPoints.add(LatLng(point.lat!, point.lon!));
+    trackPoints.add(
+      Location(
+        latLng: LatLng(point.lat!, point.lon!),
+        elevation: point.ele ?? 0,
+      ),
+    );
   }
 
   return trackPoints;
@@ -51,7 +57,14 @@ List<Waypoint> getTrackwaypoints(String trackData) {
   Gpx track = GpxReader().fromString(trackData);
 
   for (Wpt point in track.wpts) {
-    waypoints.add(Waypoint(name: point.name ?? "", description: point.desc ?? "", location: LatLng(point.lat!, point.lon!)));
+    waypoints.add(
+      Waypoint(
+        name: point.name ?? "",
+        description: point.desc ?? "",
+        location: LatLng(point.lat!, point.lon!),
+        elevation: point.ele ?? 0,
+      ),
+    );
   }
 
   return waypoints;
@@ -67,17 +80,17 @@ String getTrackName(String trackData) {
 }
 
 LatLngBounds getBoundsFromTrackData(String trackData) {
-  List<LatLng> points = getTrackPoints(trackData);
+  List<Location> points = getTrackPoints(trackData);
   double minLat = double.infinity;
   double minLng = double.infinity;
   double maxLat = double.negativeInfinity;
   double maxLng = double.negativeInfinity;
 
   for (final point in points) {
-    minLat = min(minLat, point.latitude);
-    minLng = min(minLng, point.longitude);
-    maxLat = max(maxLat, point.latitude);
-    maxLng = max(maxLng, point.longitude);
+    minLat = min(minLat, point.latLng.latitude);
+    minLng = min(minLng, point.latLng.longitude);
+    maxLat = max(maxLat, point.latLng.latitude);
+    maxLng = max(maxLng, point.latLng.longitude);
   }
 
   return LatLngBounds(LatLng(minLat, minLng), LatLng(maxLat, maxLng));

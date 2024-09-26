@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:roadless/src/constants/enums.dart';
+import 'package:roadless/src/models/location.dart';
 import 'package:roadless/src/models/waypoint.dart';
 
 class Track {
@@ -18,7 +19,7 @@ class Track {
 
   String id;
   String name;
-  List<LatLng> points;
+  List<Location> points;
   List<Waypoint> waypoints;
   Color color;
   double distance;
@@ -31,10 +32,10 @@ class Track {
     double maxLng = double.negativeInfinity;
 
     for (final point in points) {
-      minLat = min(minLat, point.latitude);
-      minLng = min(minLng, point.longitude);
-      maxLat = max(maxLat, point.latitude);
-      maxLng = max(maxLng, point.longitude);
+      minLat = min(minLat, point.latLng.latitude);
+      minLng = min(minLng, point.latLng.longitude);
+      maxLat = max(maxLat, point.latLng.latitude);
+      maxLng = max(maxLng, point.latLng.longitude);
     }
 
     return LatLngBounds(LatLng(minLat, minLng), LatLng(maxLat, maxLng));
@@ -81,11 +82,11 @@ class Track {
     return Track(
       id: json['id'],
       name: json['name'],
-      points: [...json['points'].map((e) => LatLng.fromJson(e))],
+      points: [...json['points'].map((e) => Location.fromJson(e))],
       waypoints: [...json['waypoints'].map((e) => Waypoint.fromJson(e))],
       color: Color(json['color']),
       distance: json['distance'],
-      activityType: json.containsKey('activityType') ? ActivityType.fromName(json["activityType"]) : null,
+      activityType: json['activityType'] != null ? ActivityType.fromName(json["activityType"]) : null,
     );
   }
 
@@ -104,8 +105,8 @@ class Track {
     buffer.writeln('<trkseg>');
 
     for (final point in points) {
-      buffer.writeln('<trkpt lat="${point.latitude}" lon="${point.longitude}">');
-      buffer.writeln('<ele>0</ele>'); // TODO: Ver si es posible ajustar la elevación
+      buffer.writeln('<trkpt lat="${point.latLng.latitude}" lon="${point.latLng.longitude}">');
+      buffer.writeln('<ele>${point.elevation}</ele>');
       buffer.writeln('</trkpt>');
     }
 

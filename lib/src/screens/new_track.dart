@@ -6,10 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:roadless/src/Utils/logger.dart';
 import 'package:roadless/src/components/input_field.dart';
 import 'package:roadless/src/constants/enums.dart';
+import 'package:roadless/src/models/location.dart';
 import 'package:roadless/src/models/track.dart';
 import 'package:roadless/src/providers/cloud_firestore_provider.dart';
 import 'package:roadless/src/providers/color_provider.dart';
@@ -34,7 +34,7 @@ class NewTrackScreenState extends ConsumerState<NewTrackScreen> {
   final formKey = GlobalKey<FormState>();
   MapController mapController = MapController();
 
-  late List<LatLng> points;
+  late List<Location> points;
   late TextEditingController nameController;
   late LatLngBounds trackBounds;
 
@@ -189,7 +189,7 @@ class NewTrackScreenState extends ConsumerState<NewTrackScreen> {
                               PolylineLayer(
                                 polylines: [
                                   Polyline(
-                                    points: points,
+                                    points: points.map((point) => point.latLng).toList(),
                                     strokeWidth: 6,
                                     color: dialogPickerColor,
                                   ),
@@ -291,7 +291,7 @@ class NewTrackScreenState extends ConsumerState<NewTrackScreen> {
               points: points,
               waypoints: getTrackwaypoints(widget.trackData),
               color: dialogPickerColor,
-              distance: calculateTrackDistance(points),
+              distance: calculateTrackDistance(points.map((e) => e.latLng).toList()),
               activityType: selectedActivityType,
             );
 
