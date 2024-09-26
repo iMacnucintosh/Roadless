@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:roadless/src/Utils/logger.dart';
 import 'package:roadless/src/Utils/utils.dart';
+import 'package:roadless/src/components/input_field.dart';
 import 'package:roadless/src/constants/enums.dart';
 import 'package:roadless/src/models/track.dart';
 import 'package:roadless/src/models/waypoint.dart';
@@ -69,27 +69,15 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         mainAxisAlignment: MainAxisAlignment.start,
                                         children: [
-                                          TextFormField(
+                                          InputField(
                                             controller: nameController,
-                                            style: Theme.of(context).textTheme.titleLarge,
-                                            decoration: InputDecoration(
-                                              hintText: "Nombre",
-                                              suffixIcon: GestureDetector(
-                                                onTap: () => nameController.clear(),
-                                                child: const Icon(Icons.cancel_outlined),
-                                              ),
-                                            ),
+                                            labelText: "Nombre",
                                           ),
                                           const SizedBox(height: 10),
-                                          TextFormField(
+                                          InputField(
                                             controller: descriptionController,
-                                            decoration: InputDecoration(
-                                              hintText: "Descripción",
-                                              suffixIcon: GestureDetector(
-                                                onTap: () => descriptionController.clear(),
-                                                child: const Icon(Icons.cancel_outlined),
-                                              ),
-                                            ),
+                                            labelText: "Descripción",
+                                            height: 280,
                                           ),
                                           const SizedBox(height: 20),
                                           Row(
@@ -171,27 +159,15 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
                                                     crossAxisAlignment: CrossAxisAlignment.start,
                                                     mainAxisAlignment: MainAxisAlignment.start,
                                                     children: [
-                                                      TextFormField(
+                                                      InputField(
                                                         controller: nameController,
-                                                        style: Theme.of(context).textTheme.titleLarge,
-                                                        decoration: InputDecoration(
-                                                          hintText: "Nombre",
-                                                          suffixIcon: GestureDetector(
-                                                            onTap: () => nameController.clear(),
-                                                            child: const Icon(Icons.cancel_outlined),
-                                                          ),
-                                                        ),
+                                                        labelText: "Nombre",
                                                       ),
                                                       const SizedBox(height: 10),
-                                                      TextFormField(
+                                                      InputField(
                                                         controller: descriptionController,
-                                                        decoration: InputDecoration(
-                                                          hintText: "Descripción",
-                                                          suffixIcon: GestureDetector(
-                                                            onTap: () => descriptionController.clear(),
-                                                            child: const Icon(Icons.cancel_outlined),
-                                                          ),
-                                                        ),
+                                                        labelText: "Descripción",
+                                                        height: 280,
                                                       ),
                                                       const SizedBox(height: 20),
                                                       Row(

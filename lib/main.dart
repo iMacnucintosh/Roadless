@@ -34,6 +34,7 @@ class Roadless extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: lightTheme,
       darkTheme: darkTheme,
+      // themeMode: MediaQuery.platformBrightnessOf(context) == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
       themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
       home: const HomeScreen(),
     );

@@ -28,7 +28,7 @@ enum ActivityType {
   ),
   hiking(
     name: "hiking",
-    label: "Sendereismo",
+    label: "Senderismo",
     icon: Icons.hiking_outlined,
   ),
   car(
