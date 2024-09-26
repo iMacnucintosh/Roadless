@@ -47,7 +47,7 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
                 mapController: _mapController,
                 options: MapOptions(
                   initialCenter: trackBounds.center,
-                  initialZoom: widget.track.fitBounds(trackBounds, Size(constraints.maxWidth, constraints.maxHeight - 200)),
+                  initialZoom: widget.track.fitBounds(trackBounds, Size(constraints.maxWidth, constraints.maxHeight - 450)),
                   onTap: (tapPosition, point) {
                     showModalBottomSheet(
                       showDragHandle: true,
