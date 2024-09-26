@@ -11,12 +11,8 @@ class InputField extends StatefulWidget {
     this.prefix,
     this.prefixIcon,
     this.validator,
-    this.keyboardType,
     this.obscureText = false,
     this.showShadow = false,
-    this.onChanged,
-    this.onSaved,
-    this.onSubmit,
     this.onClear,
     this.enabled = true,
     this.readOnly = false,
@@ -32,14 +28,10 @@ class InputField extends StatefulWidget {
   final Widget? prefix;
   final IconData? prefixIcon;
   final String? Function(String?)? validator;
-  final TextInputType? keyboardType;
   final bool obscureText;
   final bool showShadow;
   final double width;
   final double? height;
-  final void Function(String)? onChanged;
-  final void Function(String?)? onSaved;
-  final void Function(String)? onSubmit;
   final void Function()? onClear;
   final bool enabled;
   final bool readOnly;
@@ -95,46 +87,33 @@ class _InputFieldState extends State<InputField> {
                 ),
               )
             : null;
-    return Container(
-      decoration: BoxDecoration(
-        boxShadow: widget.showShadow
-            ? const [
-                BoxShadow(
-                  offset: Offset(0, 5),
-                  blurRadius: 10,
-                  color: Color.fromRGBO(209, 209, 209, 1),
-                ),
-              ]
-            : null,
-        borderRadius: BorderRadius.circular(5.0),
-      ),
-      child: SizedBox(
-        width: widget.width,
-        height: widget.height,
-        child: TextFormField(
-          focusNode: widget.focusNode,
-          // expands: false,
-          readOnly: widget.readOnly,
-          initialValue: widget.initialValue,
-          decoration: InputDecoration(
-            prefix: widget.prefix,
-            prefixIcon: widget.prefixIcon != null ? Icon(widget.prefixIcon) : null,
-            labelText: widget.labelText,
-            suffixIcon: widget.controller != null ? inputSufixIcon : null,
-          ),
-          controller: widget.controller,
-          onSaved: widget.onSaved,
-          onChanged: widget.onChanged,
-          onFieldSubmitted: widget.onSubmit,
-          keyboardType: widget.keyboardType,
-          obscureText: showPassword,
-          maxLines: null,
-          minLines: null,
-          expands: true,
-          validator: widget.validator,
-          enabled: widget.enabled,
-          maxLength: widget.maxLength,
+    return SizedBox(
+      width: widget.width,
+      height: widget.height,
+      child: TextFormField(
+        focusNode: widget.focusNode,
+        readOnly: widget.readOnly,
+        initialValue: widget.initialValue,
+        decoration: InputDecoration(
+          prefix: widget.prefix,
+          prefixIcon: widget.prefixIcon != null
+              ? Padding(
+                  padding: const EdgeInsets.only(left: 6.0),
+                  child: Icon(widget.prefixIcon),
+                )
+              : null,
+          labelText: widget.labelText,
+          suffixIcon: widget.controller != null ? inputSufixIcon : null,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
         ),
+        controller: widget.controller,
+        obscureText: showPassword,
+        maxLines: null,
+        minLines: null,
+        expands: true,
+        validator: widget.validator,
+        enabled: widget.enabled,
+        maxLength: widget.maxLength,
       ),
     );
   }
