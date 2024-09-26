@@ -32,19 +32,19 @@ Future<String?> loadTrackData() async {
 
 List<Location> getTrackPoints(String trackData) {
   List<Location> trackPoints = [];
-  List<Wpt> points = [];
+  List<Wpt> wpts = [];
   Gpx track = GpxReader().fromString(trackData);
   if (track.rtes.isNotEmpty) {
-    points = track.rtes.first.rtepts;
+    wpts = track.rtes.first.rtepts;
   } else if (track.trks.isNotEmpty) {
-    points = track.trks.first.trksegs.first.trkpts;
+    wpts = track.trks.first.trksegs.first.trkpts;
   }
 
-  for (Wpt point in points) {
+  for (Wpt location in wpts) {
     trackPoints.add(
       Location(
-        latLng: LatLng(point.lat!, point.lon!),
-        elevation: point.ele ?? 0,
+        latLng: LatLng(location.lat!, location.lon!),
+        elevation: location.ele ?? 0,
       ),
     );
   }
@@ -56,13 +56,15 @@ List<Waypoint> getTrackwaypoints(String trackData) {
   List<Waypoint> waypoints = [];
   Gpx track = GpxReader().fromString(trackData);
 
-  for (Wpt point in track.wpts) {
+  for (Wpt wpt in track.wpts) {
     waypoints.add(
       Waypoint(
-        name: point.name ?? "",
-        description: point.desc ?? "",
-        location: LatLng(point.lat!, point.lon!),
-        elevation: point.ele ?? 0,
+        name: wpt.name ?? "",
+        description: wpt.desc ?? "",
+        location: Location(
+          latLng: LatLng(wpt.lat!, wpt.lon!),
+          elevation: wpt.ele ?? 0,
+        ),
       ),
     );
   }
@@ -80,17 +82,17 @@ String getTrackName(String trackData) {
 }
 
 LatLngBounds getBoundsFromTrackData(String trackData) {
-  List<Location> points = getTrackPoints(trackData);
+  List<Location> locations = getTrackPoints(trackData);
   double minLat = double.infinity;
   double minLng = double.infinity;
   double maxLat = double.negativeInfinity;
   double maxLng = double.negativeInfinity;
 
-  for (final point in points) {
-    minLat = min(minLat, point.latLng.latitude);
-    minLng = min(minLng, point.latLng.longitude);
-    maxLat = max(maxLat, point.latLng.latitude);
-    maxLng = max(maxLng, point.latLng.longitude);
+  for (final location in locations) {
+    minLat = min(minLat, location.latLng.latitude);
+    minLng = min(minLng, location.latLng.longitude);
+    maxLat = max(maxLat, location.latLng.latitude);
+    maxLng = max(maxLng, location.latLng.longitude);
   }
 
   return LatLngBounds(LatLng(minLat, minLng), LatLng(maxLat, maxLng));

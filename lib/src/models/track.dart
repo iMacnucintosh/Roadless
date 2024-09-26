@@ -10,20 +10,22 @@ class Track {
   Track({
     required this.id,
     required this.name,
-    required this.points,
+    required this.locations,
     this.waypoints = const [],
     this.color = Colors.blue,
     this.distance = 0.0,
     this.activityType,
+    this.public = false,
   });
 
   String id;
   String name;
-  List<Location> points;
+  List<Location> locations;
   List<Waypoint> waypoints;
   Color color;
   double distance;
   ActivityType? activityType;
+  bool public;
 
   LatLngBounds getBounds() {
     double minLat = double.infinity;
@@ -31,11 +33,11 @@ class Track {
     double maxLat = double.negativeInfinity;
     double maxLng = double.negativeInfinity;
 
-    for (final point in points) {
-      minLat = min(minLat, point.latLng.latitude);
-      minLng = min(minLng, point.latLng.longitude);
-      maxLat = max(maxLat, point.latLng.latitude);
-      maxLng = max(maxLng, point.latLng.longitude);
+    for (final location in locations) {
+      minLat = min(minLat, location.latLng.latitude);
+      minLng = min(minLng, location.latLng.longitude);
+      maxLat = max(maxLat, location.latLng.latitude);
+      maxLng = max(maxLng, location.latLng.longitude);
     }
 
     return LatLngBounds(LatLng(minLat, minLng), LatLng(maxLat, maxLng));
@@ -70,11 +72,12 @@ class Track {
     return {
       'id': id,
       'name': name,
-      'points': points.map((point) => point.toJson()).toList(),
+      'points': locations.map((location) => location.toJson()).toList(),
       'waypoints': waypoints.map((waypoint) => waypoint.toJson()).toList(),
       'color': color.value,
       'distance': distance,
       'activityType': activityType?.name,
+      'public': public,
     };
   }
 
@@ -82,11 +85,12 @@ class Track {
     return Track(
       id: json['id'],
       name: json['name'],
-      points: [...json['points'].map((e) => Location.fromJson(e))],
+      locations: [...json['points'].map((e) => Location.fromJson(e))],
       waypoints: [...json['waypoints'].map((e) => Waypoint.fromJson(e))],
       color: Color(json['color']),
       distance: json['distance'],
       activityType: json['activityType'] != null ? ActivityType.fromName(json["activityType"]) : null,
+      public: json['public'],
     );
   }
 
@@ -104,9 +108,9 @@ class Track {
 
     buffer.writeln('<trkseg>');
 
-    for (final point in points) {
-      buffer.writeln('<trkpt lat="${point.latLng.latitude}" lon="${point.latLng.longitude}">');
-      buffer.writeln('<ele>${point.elevation}</ele>');
+    for (final location in locations) {
+      buffer.writeln('<trkpt lat="${location.latLng.latitude}" lon="${location.latLng.longitude}">');
+      buffer.writeln('<ele>${location.elevation}</ele>');
       buffer.writeln('</trkpt>');
     }
 
@@ -114,7 +118,7 @@ class Track {
     buffer.writeln('</trk>');
 
     for (final waypoint in waypoints) {
-      buffer.writeln('<wpt lat="${waypoint.location.latitude}" lon="${waypoint.location.longitude}">');
+      buffer.writeln('<wpt lat="${waypoint.location.latLng.latitude}" lon="${waypoint.location.latLng.longitude}">');
       buffer.writeln('<name>${waypoint.name}</name>');
       buffer.writeln('<desc>${waypoint.description}</desc>');
       buffer.writeln('</wpt>');

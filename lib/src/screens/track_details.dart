@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:roadless/src/Utils/utils.dart';
 import 'package:roadless/src/components/input_field.dart';
 import 'package:roadless/src/constants/enums.dart';
+import 'package:roadless/src/models/location.dart';
 import 'package:roadless/src/models/track.dart';
 import 'package:roadless/src/models/waypoint.dart';
 import 'package:roadless/src/providers/cloud_firestore_provider.dart';
@@ -37,10 +38,31 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     Color dialogPickerColor = ref.watch(colorProvider);
+    TextEditingController nameController = TextEditingController(text: widget.track.name);
+
+    final formKey = GlobalKey<FormState>();
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.track.name),
+        title: Form(
+          key: formKey,
+          child: InputField(
+            controller: nameController,
+            validator: (value) {
+              if (value!.isEmpty) {
+                return "Introduzca un nombre para el track";
+              }
+              return null;
+            },
+            height: 50,
+            onEditingComplete: () {
+              if (formKey.currentState!.validate()) {
+                widget.track.name = nameController.text;
+                ref.read(cloudFirestoreProvider.notifier).updateTrack(widget.track);
+              }
+            },
+          ),
+        ),
       ),
       body: Stack(
         children: [
@@ -81,6 +103,7 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
                                             controller: descriptionController,
                                             labelText: "Descripción",
                                             height: 280,
+                                            multiline: true,
                                           ),
                                           const SizedBox(height: 20),
                                           Row(
@@ -91,7 +114,7 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
                                                   Waypoint waypoint = Waypoint(
                                                     name: nameController.text,
                                                     description: descriptionController.text,
-                                                    location: point,
+                                                    location: Location(latLng: point),
                                                   );
                                                   widget.track.waypoints.add(waypoint);
                                                   ref.read(cloudFirestoreProvider.notifier).updateTrack(widget.track);
@@ -127,7 +150,7 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
                   PolylineLayer(
                     polylines: [
                       Polyline(
-                        points: widget.track.points.map((point) => point.latLng).toList(),
+                        points: widget.track.locations.map((location) => location.latLng).toList(),
                         strokeWidth: 6,
                         color: dialogPickerColor,
                       ),
@@ -139,7 +162,7 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
                           (waypoint) => Marker(
                             width: 80.0,
                             height: 80.0,
-                            point: waypoint.location,
+                            point: waypoint.location.latLng,
                             child: GestureDetector(
                               onTap: () {
                                 showModalBottomSheet(
@@ -171,6 +194,7 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
                                                         controller: descriptionController,
                                                         labelText: "Descripción",
                                                         height: 280,
+                                                        multiline: true,
                                                       ),
                                                       const SizedBox(height: 20),
                                                       Row(

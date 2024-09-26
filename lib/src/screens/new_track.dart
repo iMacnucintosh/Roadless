@@ -34,13 +34,13 @@ class NewTrackScreenState extends ConsumerState<NewTrackScreen> {
   final formKey = GlobalKey<FormState>();
   MapController mapController = MapController();
 
-  late List<Location> points;
+  late List<Location> locations;
   late TextEditingController nameController;
   late LatLngBounds trackBounds;
 
   @override
   void initState() {
-    points = getTrackPoints(widget.trackData);
+    locations = getTrackPoints(widget.trackData);
     nameController = TextEditingController(text: getTrackName(widget.trackData));
     trackBounds = getBoundsFromTrackData(widget.trackData);
     super.initState();
@@ -189,7 +189,7 @@ class NewTrackScreenState extends ConsumerState<NewTrackScreen> {
                               PolylineLayer(
                                 polylines: [
                                   Polyline(
-                                    points: points.map((point) => point.latLng).toList(),
+                                    points: locations.map((location) => location.latLng).toList(),
                                     strokeWidth: 6,
                                     color: dialogPickerColor,
                                   ),
@@ -201,7 +201,7 @@ class NewTrackScreenState extends ConsumerState<NewTrackScreen> {
                                       (waypoint) => Marker(
                                         width: 80.0,
                                         height: 80.0,
-                                        point: waypoint.location,
+                                        point: waypoint.location.latLng,
                                         child: GestureDetector(
                                           onTap: () {
                                             showModalBottomSheet(
@@ -266,8 +266,8 @@ class NewTrackScreenState extends ConsumerState<NewTrackScreen> {
                 child: const Center(
                   child: Card(
                     child: SizedBox(
-                      width: 400,
-                      height: 200,
+                      width: 300,
+                      height: 150,
                       child: Center(
                         child: CircularProgressIndicator(),
                       ),
@@ -288,10 +288,10 @@ class NewTrackScreenState extends ConsumerState<NewTrackScreen> {
             final track = Track(
               id: const Uuid().v4(),
               name: nameController.text,
-              points: points,
+              locations: locations,
               waypoints: getTrackwaypoints(widget.trackData),
               color: dialogPickerColor,
-              distance: calculateTrackDistance(points.map((e) => e.latLng).toList()),
+              distance: calculateTrackDistance(locations.map((e) => e.latLng).toList()),
               activityType: selectedActivityType,
             );
 

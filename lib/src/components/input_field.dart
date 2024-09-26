@@ -11,6 +11,7 @@ class InputField extends StatefulWidget {
     this.prefix,
     this.prefixIcon,
     this.validator,
+    this.onEditingComplete,
     this.obscureText = false,
     this.showShadow = false,
     this.onClear,
@@ -19,6 +20,7 @@ class InputField extends StatefulWidget {
     this.maxLength,
     this.width = double.infinity,
     this.height = 60,
+    this.multiline = false,
   });
   final String? id;
   final TextEditingController? controller;
@@ -28,6 +30,7 @@ class InputField extends StatefulWidget {
   final Widget? prefix;
   final IconData? prefixIcon;
   final String? Function(String?)? validator;
+  final VoidCallback? onEditingComplete;
   final bool obscureText;
   final bool showShadow;
   final double width;
@@ -36,6 +39,7 @@ class InputField extends StatefulWidget {
   final bool enabled;
   final bool readOnly;
   final int? maxLength;
+  final bool multiline;
 
   @override
   State<InputField> createState() => _InputFieldState();
@@ -108,10 +112,11 @@ class _InputFieldState extends State<InputField> {
         ),
         controller: widget.controller,
         obscureText: showPassword,
-        maxLines: null,
-        minLines: null,
-        expands: true,
+        maxLines: widget.multiline ? null : 1,
+        minLines: widget.multiline ? null : 1,
+        expands: widget.multiline ? true : false,
         validator: widget.validator,
+        onEditingComplete: widget.onEditingComplete,
         enabled: widget.enabled,
         maxLength: widget.maxLength,
       ),
