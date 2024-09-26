@@ -88,18 +88,16 @@ double fitBoundsFromTrackData(LatLngBounds bounds, Size containerSize) {
     return log(x) / log(2);
   }
 
-  double minDimension(Size size) {
-    return size.width < size.height ? size.width : size.height;
-  }
-
   double width = bounds.northEast.longitude - bounds.southWest.longitude;
   double height = bounds.northEast.latitude - bounds.southWest.latitude;
 
-  Size size = Size(width, height);
-  final aspectRatio = containerSize.width / containerSize.height;
-  final offset = size.height * (containerSize.aspectRatio - aspectRatio) / 2;
+  double boundsAspectRatio = width / height;
 
-  double zoom = log2(minDimension(containerSize) / (size.width + 2 * offset)) + 0.001;
+  double containerAspectRatio = containerSize.width / containerSize.height;
+
+  double scale = containerAspectRatio > boundsAspectRatio ? containerSize.height / height : containerSize.width / width;
+
+  double zoom = log2(scale) - 0.100;
 
   if (zoom < 0) {
     zoom = 0;

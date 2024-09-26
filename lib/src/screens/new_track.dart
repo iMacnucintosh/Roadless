@@ -85,7 +85,7 @@ class NewTrackScreen extends ConsumerWidget {
                           mapController: mapController,
                           options: MapOptions(
                             initialCenter: trackBounds.center,
-                            initialZoom: fitBoundsFromTrackData(trackBounds, constraints.biggest),
+                            initialZoom: fitBoundsFromTrackData(trackBounds, Size(constraints.maxWidth, constraints.maxHeight / 2)),
                           ),
                           children: [
                             TileLayer(

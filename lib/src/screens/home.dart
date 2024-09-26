@@ -235,7 +235,13 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                                     mapController: mapController,
                                     options: MapOptions(
                                       initialCenter: track.getBounds().center,
-                                      initialZoom: fitBoundsFromTrackData(track.getBounds(), const Size(100, 70)),
+                                      initialZoom: fitBoundsFromTrackData(
+                                        track.getBounds(),
+                                        const Size(
+                                          150,
+                                          100,
+                                        ),
+                                      ), // TODO: Comprar punto mas arriba y mas abajo y si es mucha longitud cambiar parametros del Size
                                       interactionOptions: const InteractionOptions(
                                         flags: InteractiveFlag.none,
                                       ),
