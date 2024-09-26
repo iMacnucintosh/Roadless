@@ -47,15 +47,35 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
       appBar: AppBar(
         title: Form(
           key: formKey,
-          child: InputField(
+          child: TextFormField(
             controller: nameController,
+            decoration: InputDecoration(
+              fillColor: Theme.of(context).colorScheme.surface,
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+              ),
+              errorBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Theme.of(context).colorScheme.error),
+              ),
+              focusedErrorBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Theme.of(context).colorScheme.error),
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(Icons.clear),
+                onPressed: () {
+                  nameController.clear();
+                },
+              ),
+            ),
             validator: (value) {
               if (value!.isEmpty) {
                 return "Introduzca un nombre para el track";
               }
               return null;
             },
-            height: 50,
             onEditingComplete: () {
               if (formKey.currentState!.validate()) {
                 widget.track.name = nameController.text;
@@ -65,11 +85,11 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
           ),
         ),
       ),
-      body: Stack(
-        children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              return FlutterMap(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          return Stack(
+            children: [
+              FlutterMap(
                 mapController: _mapController,
                 options: MapOptions(
                   initialCenter: trackBounds.center,
@@ -257,123 +277,128 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
                         .toList(),
                   ),
                 ],
-              );
-            },
-          ),
-          Positioned(
-            top: 10,
-            left: 10,
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Wrap(
-                  direction: Axis.vertical,
-                  spacing: 8,
-                  children: [
-                    Text(
-                      '${widget.track.distance} km',
-                      style: Theme.of(context).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    Row(
+              ),
+              Positioned(
+                top: 10,
+                left: 10,
+                child: Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Wrap(
+                      direction: Axis.vertical,
+                      spacing: 8,
                       children: [
-                        InkWell(
-                          onTap: () async {
-                            ActivityType? activityType = await showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  content: SingleChildScrollView(
-                                    child: Center(
-                                      child: Wrap(
-                                        spacing: 20,
-                                        runSpacing: 20,
-                                        alignment: WrapAlignment.center,
-                                        children: ActivityType.values
-                                            .map(
-                                              (activityType) => IconButton(
-                                                tooltip: activityType.label,
-                                                icon: Icon(
-                                                  activityType.icon,
-                                                  size: 40,
-                                                ),
-                                                onPressed: () {
-                                                  Navigator.of(context).pop(activityType);
-                                                },
-                                              ),
-                                            )
-                                            .toList(),
+                        Text(
+                          '${widget.track.distance} km',
+                          style: Theme.of(context).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold),
+                        ),
+                        Row(
+                          children: [
+                            InkWell(
+                              onTap: () async {
+                                ActivityType? activityType = await showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return AlertDialog(
+                                      content: SingleChildScrollView(
+                                        child: Center(
+                                          child: Wrap(
+                                            spacing: 20,
+                                            runSpacing: 20,
+                                            alignment: WrapAlignment.center,
+                                            children: ActivityType.values
+                                                .map(
+                                                  (activityType) => IconButton(
+                                                    tooltip: activityType.label,
+                                                    icon: Icon(
+                                                      activityType.icon,
+                                                      size: 40,
+                                                    ),
+                                                    onPressed: () {
+                                                      Navigator.of(context).pop(activityType);
+                                                    },
+                                                  ),
+                                                )
+                                                .toList(),
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ),
+                                    );
+                                  },
                                 );
+                                if (activityType != null) {
+                                  widget.track.activityType = activityType;
+                                  ref.read(cloudFirestoreProvider.notifier).updateTrack(widget.track);
+                                  setState(() {});
+                                }
                               },
-                            );
-                            if (activityType != null) {
-                              widget.track.activityType = activityType;
-                              ref.read(cloudFirestoreProvider.notifier).updateTrack(widget.track);
-                              setState(() {});
+                              child: widget.track.activityType == null
+                                  ? const Text("Especificar actividad")
+                                  : Row(
+                                      children: [
+                                        Icon(widget.track.activityType!.icon),
+                                        const SizedBox(width: 5),
+                                        Text(widget.track.activityType!.label, style: Theme.of(context).textTheme.titleMedium),
+                                      ],
+                                    ),
+                            )
+                          ],
+                        ),
+                        ColorIndicator(
+                          width: 55,
+                          height: 32,
+                          borderRadius: 30,
+                          color: dialogPickerColor,
+                          onSelectFocus: false,
+                          onSelect: () async {
+                            final Color colorBeforeDialog = dialogPickerColor;
+                            if (!await colorPickerDialog(
+                              context,
+                              dialogPickerColor,
+                              ref,
+                              onColorChanged: (color) {
+                                widget.track.color = color;
+                                ref.read(cloudFirestoreProvider.notifier).updateTrack(widget.track);
+                              },
+                            )) {
+                              dialogPickerColor = colorBeforeDialog;
                             }
                           },
-                          child: widget.track.activityType == null
-                              ? const Text("Especificar actividad")
-                              : Row(
-                                  children: [
-                                    Icon(widget.track.activityType!.icon),
-                                    const SizedBox(width: 5),
-                                    Text(widget.track.activityType!.label, style: Theme.of(context).textTheme.titleMedium),
-                                  ],
-                                ),
-                        )
+                        ),
                       ],
                     ),
-                    ColorIndicator(
-                      width: 55,
-                      height: 32,
-                      borderRadius: 30,
-                      color: dialogPickerColor,
-                      onSelectFocus: false,
-                      onSelect: () async {
-                        final Color colorBeforeDialog = dialogPickerColor;
-                        if (!await colorPickerDialog(
-                          context,
-                          dialogPickerColor,
-                          ref,
-                          onColorChanged: (color) {
-                            widget.track.color = color;
-                            ref.read(cloudFirestoreProvider.notifier).updateTrack(widget.track);
-                          },
-                        )) {
-                          dialogPickerColor = colorBeforeDialog;
-                        }
-                      },
-                    ),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ),
-          Positioned(
-            left: 20,
-            bottom: 20,
-            right: 20,
-            child: AltitudeChart(
-              locations: widget.track.locations,
-              trackColor: widget.track.color,
-            ),
-          )
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        tooltip: "Exportar GPX",
-        onPressed: () async {
-          String trackData = widget.track.toGpx();
-          await FileSaver.instance.saveFile(
-            bytes: Uint8List.fromList(trackData.codeUnits),
-            name: widget.track.name,
-            ext: "gpx",
+              Positioned(
+                top: 10,
+                right: 10,
+                child: FloatingActionButton(
+                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  tooltip: "Exportar GPX",
+                  onPressed: () async {
+                    String trackData = widget.track.toGpx();
+                    await FileSaver.instance.saveFile(
+                      bytes: Uint8List.fromList(trackData.codeUnits),
+                      name: widget.track.name,
+                      ext: "gpx",
+                    );
+                  },
+                  child: const Icon(Icons.ios_share),
+                ),
+              ),
+              Positioned(
+                left: 20,
+                right: 20,
+                bottom: 20,
+                child: AltitudeChart(
+                  locations: widget.track.locations,
+                  trackColor: widget.track.color,
+                ),
+              ),
+            ],
           );
         },
-        child: const Icon(Icons.ios_share),
       ),
     );
   }
