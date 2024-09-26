@@ -50,6 +50,7 @@ dependencies:
   logger: ^2.4.0
   cloud_firestore: ^5.4.3
   flutter_map_cancellable_tile_provider: ^3.0.2
+  fl_chart: ^0.69.0
 
 dev_dependencies:
   flutter_test:

@@ -7,6 +7,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:roadless/src/Utils/utils.dart';
+import 'package:roadless/src/components/altitude_chart.dart';
 import 'package:roadless/src/components/input_field.dart';
 import 'package:roadless/src/constants/enums.dart';
 import 'package:roadless/src/models/location.dart';
@@ -349,6 +350,15 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
                   ],
                 ),
               ),
+            ),
+          ),
+          Positioned(
+            left: 20,
+            bottom: 20,
+            right: 20,
+            child: AltitudeChart(
+              locations: widget.track.locations,
+              trackColor: widget.track.color,
             ),
           )
         ],
