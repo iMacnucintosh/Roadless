@@ -365,6 +365,22 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
                             }
                           },
                         ),
+                        Wrap(
+                          spacing: 10,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Icon(Icons.people),
+                            Text("Pública"),
+                            Checkbox(
+                              value: widget.track.public,
+                              onChanged: (value) {
+                                widget.track.public = value!;
+                                ref.read(cloudFirestoreProvider.notifier).updateTrack(widget.track);
+                                setState(() {});
+                              },
+                            ),
+                          ],
+                        )
                       ],
                     ),
                   ),
