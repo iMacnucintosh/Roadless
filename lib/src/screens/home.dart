@@ -234,43 +234,63 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                                 SizedBox(
                                   width: 150,
                                   height: 100,
-                                  child: IgnorePointer(
-                                    child: FlutterMap(
-                                      mapController: mapController,
-                                      options: MapOptions(
-                                        initialCenter: track.getBounds().center,
-                                        initialZoom: fitBoundsFromTrackData(
-                                          track.getBounds(),
-                                          const Size(
-                                            150,
-                                            100,
+                                  child: ClipRRect(
+                                    borderRadius: const BorderRadius.only(
+                                      topRight: Radius.circular(12),
+                                      bottomRight: Radius.circular(12),
+                                    ),
+                                    child: Material(
+                                      color: Theme.of(context).colorScheme.surface,
+                                      child: ShaderMask(
+                                        shaderCallback: (bounds) {
+                                          return LinearGradient(
+                                            begin: Alignment.centerLeft,
+                                            end: Alignment.centerRight,
+                                            colors: [
+                                              Colors.transparent,
+                                              Colors.black.withOpacity(1),
+                                            ],
+                                            stops: const [0.0, 0.3],
+                                          ).createShader(bounds);
+                                        },
+                                        blendMode: BlendMode.dstIn,
+                                        child: IgnorePointer(
+                                          child: FlutterMap(
+                                            mapController: mapController,
+                                            options: MapOptions(
+                                              initialCenter: track.getBounds().center,
+                                              initialZoom: fitBoundsFromTrackData(
+                                                track.getBounds(),
+                                                const Size(150, 100),
+                                              ),
+                                              interactionOptions: const InteractionOptions(
+                                                flags: InteractiveFlag.none,
+                                              ),
+                                            ),
+                                            children: [
+                                              TileLayer(
+                                                urlTemplate: Theme.of(context).colorScheme.brightness == Brightness.light
+                                                    ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
+                                                    : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+                                                tileProvider: CancellableNetworkTileProvider(),
+                                                maxZoom: 19,
+                                              ),
+                                              PolylineLayer(
+                                                polylines: [
+                                                  Polyline(
+                                                    points: track.points,
+                                                    strokeWidth: 2,
+                                                    color: track.color,
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
                                           ),
-                                        ), // TODO: Comprar punto mas arriba y mas abajo y si es mucha longitud cambiar parametros del Size
-                                        interactionOptions: const InteractionOptions(
-                                          flags: InteractiveFlag.none,
                                         ),
                                       ),
-                                      children: [
-                                        TileLayer(
-                                          urlTemplate: Theme.of(context).colorScheme.brightness == Brightness.light
-                                              ? 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'
-                                              : 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-                                          tileProvider: CancellableNetworkTileProvider(),
-                                          maxZoom: 19,
-                                        ),
-                                        PolylineLayer(
-                                          polylines: [
-                                            Polyline(
-                                              points: track.points,
-                                              strokeWidth: 2,
-                                              color: track.color,
-                                            ),
-                                          ],
-                                        )
-                                      ],
                                     ),
                                   ),
-                                )
+                                ),
                               ],
                             ),
                           ),
