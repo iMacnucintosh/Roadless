@@ -278,7 +278,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                                               PolylineLayer(
                                                 polylines: [
                                                   Polyline(
-                                                    points: track.locations.map((e) => e.latLng).toList(),
+                                                    points: track.simplify(0.001).map((e) => e.latLng).toList(),
                                                     strokeWidth: 2,
                                                     color: track.color,
                                                   ),

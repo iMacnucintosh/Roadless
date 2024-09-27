@@ -127,4 +127,64 @@ class Track {
 
     return buffer.toString();
   }
+
+  // Método para simplificar los puntos de la ruta
+  List<Location> simplify(double tolerance) {
+    return _simplifyRoute(locations, tolerance);
+  }
+
+  // Algoritmo de Douglas-Peucker
+  List<Location> _simplifyRoute(List<Location> points, double tolerance) {
+    if (points.length < 3) {
+      return points;
+    }
+
+    final result = <Location>[];
+
+    // Función recursiva para aplicar el algoritmo
+    void simplifyRec(List<Location> points, int start, int end, double tol) {
+      double maxDistance = 0;
+      int farthestIndex = 0;
+
+      for (int i = start + 1; i < end; i++) {
+        final distance = _perpendicularDistance(points[i].latLng, points[start].latLng, points[end].latLng);
+        if (distance > maxDistance) {
+          maxDistance = distance;
+          farthestIndex = i;
+        }
+      }
+
+      if (maxDistance > tol) {
+        simplifyRec(points, start, farthestIndex, tol);
+        simplifyRec(points, farthestIndex, end, tol);
+      } else {
+        if (!result.contains(points[start])) {
+          result.add(points[start]);
+        }
+        if (!result.contains(points[end])) {
+          result.add(points[end]);
+        }
+      }
+    }
+
+    simplifyRec(points, 0, points.length - 1, tolerance);
+    return result;
+  }
+
+  // Función de distancia perpendicular
+  double _perpendicularDistance(LatLng point, LatLng start, LatLng end) {
+    final dx = end.latitude - start.latitude;
+    final dy = end.longitude - start.longitude;
+
+    if (dx == 0 && dy == 0) {
+      return sqrt(pow(point.latitude - start.latitude, 2) + pow(point.longitude - start.longitude, 2));
+    }
+
+    final t = ((point.latitude - start.latitude) * dx + (point.longitude - start.longitude) * dy) / (dx * dx + dy * dy);
+
+    final nearestLat = start.latitude + t * dx;
+    final nearestLon = start.longitude + t * dy;
+
+    return sqrt(pow(point.latitude - nearestLat, 2) + pow(point.longitude - nearestLon, 2));
+  }
 }
