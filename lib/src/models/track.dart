@@ -103,6 +103,12 @@ class Track {
     buffer.writeln('<desc>$name</desc>');
     buffer.writeln('</metadata>');
 
+    for (final waypoint in waypoints) {
+      buffer.writeln('<wpt lat="${waypoint.location.latLng.latitude}" lon="${waypoint.location.latLng.longitude}">');
+      buffer.writeln('<name>${waypoint.name}</name>');
+      buffer.writeln('</wpt>');
+    }
+
     buffer.writeln('<trk>');
     buffer.writeln('<name>$name</name>');
 
@@ -116,13 +122,6 @@ class Track {
 
     buffer.writeln('</trkseg>');
     buffer.writeln('</trk>');
-
-    for (final waypoint in waypoints) {
-      buffer.writeln('<wpt lat="${waypoint.location.latLng.latitude}" lon="${waypoint.location.latLng.longitude}">');
-      buffer.writeln('<name>${waypoint.name}</name>');
-      buffer.writeln('<desc>${waypoint.description}</desc>');
-      buffer.writeln('</wpt>');
-    }
 
     buffer.writeln('</gpx>');
 

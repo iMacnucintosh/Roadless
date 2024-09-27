@@ -212,25 +212,25 @@ class NewTrackScreenState extends ConsumerState<NewTrackScreen> {
                                                     return Row(
                                                       mainAxisAlignment: MainAxisAlignment.center,
                                                       children: [
-                                                        Column(
-                                                          children: [
-                                                            const SizedBox(width: 100, child: Divider()),
-                                                            SizedBox(
-                                                              width: constraints.maxWidth,
-                                                              child: Padding(
-                                                                padding: const EdgeInsets.all(16.0),
-                                                                child: Column(
-                                                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                                                  mainAxisAlignment: MainAxisAlignment.start,
-                                                                  children: [
-                                                                    Text(waypoint.name, style: Theme.of(context).textTheme.titleLarge),
-                                                                    const SizedBox(height: 10),
-                                                                    Text(waypoint.description == "" ? "Sin descripción" : waypoint.description),
-                                                                  ],
+                                                        SingleChildScrollView(
+                                                          child: Column(
+                                                            children: [
+                                                              const SizedBox(width: 100, child: Divider()),
+                                                              SizedBox(
+                                                                width: constraints.maxWidth,
+                                                                child: Padding(
+                                                                  padding: const EdgeInsets.all(16.0),
+                                                                  child: Column(
+                                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                                    mainAxisAlignment: MainAxisAlignment.start,
+                                                                    children: [
+                                                                      Text(waypoint.name, style: Theme.of(context).textTheme.titleLarge),
+                                                                    ],
+                                                                  ),
                                                                 ),
                                                               ),
-                                                            ),
-                                                          ],
+                                                            ],
+                                                          ),
                                                         ),
                                                       ],
                                                     );

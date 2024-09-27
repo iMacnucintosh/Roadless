@@ -60,7 +60,6 @@ List<Waypoint> getTrackwaypoints(String trackData) {
     waypoints.add(
       Waypoint(
         name: wpt.name ?? "",
-        description: wpt.desc ?? "",
         location: Location(
           latLng: LatLng(wpt.lat!, wpt.lon!),
           elevation: wpt.ele ?? 0,

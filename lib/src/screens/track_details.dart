@@ -101,61 +101,54 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
                       builder: (BuildContext context) {
                         return LayoutBuilder(builder: (context, constraints) {
                           TextEditingController nameController = TextEditingController();
-                          TextEditingController descriptionController = TextEditingController();
-                          return Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Column(
-                                children: [
-                                  SizedBox(
-                                    width: constraints.maxWidth,
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(16.0),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        mainAxisAlignment: MainAxisAlignment.start,
-                                        children: [
-                                          InputField(
-                                            controller: nameController,
-                                            labelText: "Nombre",
-                                          ),
-                                          const SizedBox(height: 10),
-                                          InputField(
-                                            controller: descriptionController,
-                                            labelText: "Descripción",
-                                            height: 280,
-                                            multiline: true,
-                                          ),
-                                          const SizedBox(height: 20),
-                                          Row(
-                                            mainAxisAlignment: MainAxisAlignment.end,
-                                            children: [
-                                              FilledButton(
-                                                onPressed: () {
-                                                  Waypoint waypoint = Waypoint(
-                                                    name: nameController.text,
-                                                    description: descriptionController.text,
-                                                    location: Location(latLng: point),
-                                                  );
-                                                  widget.track.waypoints.add(waypoint);
-                                                  ref.read(cloudFirestoreProvider.notifier).updateTrack(widget.track);
-                                                  setState(() {});
-                                                  Navigator.pop(context);
-                                                },
-                                                child: const Padding(
-                                                  padding: EdgeInsets.all(8.0),
-                                                  child: Text("Guardar"),
+                          return SingleChildScrollView(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Column(
+                                  children: [
+                                    SizedBox(
+                                      width: constraints.maxWidth,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(16.0),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          mainAxisAlignment: MainAxisAlignment.start,
+                                          children: [
+                                            InputField(
+                                              controller: nameController,
+                                              labelText: "Nombre",
+                                            ),
+                                            const SizedBox(height: 20),
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.end,
+                                              children: [
+                                                FilledButton(
+                                                  onPressed: () {
+                                                    Waypoint waypoint = Waypoint(
+                                                      name: nameController.text,
+                                                      location: Location(latLng: point),
+                                                    );
+                                                    widget.track.waypoints.add(waypoint);
+                                                    ref.read(cloudFirestoreProvider.notifier).updateTrack(widget.track);
+                                                    setState(() {});
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: const Padding(
+                                                    padding: EdgeInsets.all(8.0),
+                                                    child: Text("Guardar"),
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                        ],
+                                              ],
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ],
+                                  ],
+                                ),
+                              ],
+                            ),
                           );
                         });
                       },
@@ -186,79 +179,72 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
                             point: waypoint.location.latLng,
                             child: GestureDetector(
                               onTap: () {
+                                TextEditingController nameController = TextEditingController(text: waypoint.name);
                                 showModalBottomSheet(
                                   showDragHandle: true,
                                   context: context,
                                   builder: (BuildContext context) {
                                     return LayoutBuilder(builder: (context, constraints) {
-                                      TextEditingController nameController = TextEditingController(text: waypoint.name);
-                                      TextEditingController descriptionController = TextEditingController(text: waypoint.description);
                                       return Row(
                                         mainAxisAlignment: MainAxisAlignment.center,
                                         children: [
-                                          Column(
-                                            children: [
-                                              SizedBox(
-                                                width: constraints.maxWidth,
-                                                child: Padding(
-                                                  padding: const EdgeInsets.all(16.0),
-                                                  child: Column(
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    mainAxisAlignment: MainAxisAlignment.start,
-                                                    children: [
-                                                      InputField(
-                                                        controller: nameController,
-                                                        labelText: "Nombre",
-                                                      ),
-                                                      const SizedBox(height: 10),
-                                                      InputField(
-                                                        controller: descriptionController,
-                                                        labelText: "Descripción",
-                                                        height: 280,
-                                                        multiline: true,
-                                                      ),
-                                                      const SizedBox(height: 20),
-                                                      Row(
-                                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                        children: [
-                                                          IconButton(
-                                                            tooltip: "Eliminar marcador",
-                                                            style: ButtonStyle(
-                                                              backgroundColor: WidgetStateProperty.all(
-                                                                Colors.red,
+                                          SingleChildScrollView(
+                                            child: Column(
+                                              children: [
+                                                SizedBox(
+                                                  width: constraints.maxWidth,
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.all(16.0),
+                                                    child: Column(
+                                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                                      mainAxisAlignment: MainAxisAlignment.start,
+                                                      children: [
+                                                        InputField(
+                                                          controller: nameController,
+                                                          labelText: "Nombre",
+                                                        ),
+                                                        const SizedBox(height: 20),
+                                                        Row(
+                                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                          children: [
+                                                            IconButton(
+                                                              tooltip: "Eliminar marcador",
+                                                              style: ButtonStyle(
+                                                                backgroundColor: WidgetStateProperty.all(
+                                                                  Colors.red,
+                                                                ),
+                                                              ),
+                                                              onPressed: () {
+                                                                widget.track.waypoints.remove(waypoint);
+                                                                ref.read(cloudFirestoreProvider.notifier).updateTrack(widget.track);
+                                                                setState(() {});
+                                                                Navigator.pop(context);
+                                                              },
+                                                              icon: const Icon(
+                                                                Icons.delete_outlined,
+                                                                color: Colors.white,
                                                               ),
                                                             ),
-                                                            onPressed: () {
-                                                              widget.track.waypoints.remove(waypoint);
-                                                              ref.read(cloudFirestoreProvider.notifier).updateTrack(widget.track);
-                                                              setState(() {});
-                                                              Navigator.pop(context);
-                                                            },
-                                                            icon: const Icon(
-                                                              Icons.delete_outlined,
-                                                              color: Colors.white,
+                                                            FilledButton(
+                                                              onPressed: () {
+                                                                waypoint.name = nameController.text;
+                                                                ref.read(cloudFirestoreProvider.notifier).updateTrack(widget.track);
+                                                                setState(() {});
+                                                                Navigator.pop(context);
+                                                              },
+                                                              child: const Padding(
+                                                                padding: EdgeInsets.all(8.0),
+                                                                child: Text("Guardar"),
+                                                              ),
                                                             ),
-                                                          ),
-                                                          FilledButton(
-                                                            onPressed: () {
-                                                              waypoint.name = nameController.text;
-                                                              waypoint.description = descriptionController.text;
-                                                              ref.read(cloudFirestoreProvider.notifier).updateTrack(widget.track);
-                                                              setState(() {});
-                                                              Navigator.pop(context);
-                                                            },
-                                                            child: const Padding(
-                                                              padding: EdgeInsets.all(8.0),
-                                                              child: Text("Guardar"),
-                                                            ),
-                                                          ),
-                                                        ],
-                                                      ),
-                                                    ],
+                                                          ],
+                                                        ),
+                                                      ],
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                            ],
+                                              ],
+                                            ),
                                           ),
                                         ],
                                       );
@@ -344,33 +330,35 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
                             )
                           ],
                         ),
-                        ColorIndicator(
-                          width: 55,
-                          height: 32,
-                          borderRadius: 30,
-                          color: dialogPickerColor,
-                          onSelectFocus: false,
-                          onSelect: () async {
-                            final Color colorBeforeDialog = dialogPickerColor;
-                            if (!await colorPickerDialog(
-                              context,
-                              dialogPickerColor,
-                              ref,
-                              onColorChanged: (color) {
-                                widget.track.color = color;
-                                ref.read(cloudFirestoreProvider.notifier).updateTrack(widget.track);
-                              },
-                            )) {
-                              dialogPickerColor = colorBeforeDialog;
-                            }
-                          },
-                        ),
                         Wrap(
                           spacing: 10,
                           crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
-                            Icon(Icons.people),
-                            Text("Pública"),
+                            ColorIndicator(
+                              width: 55,
+                              height: 32,
+                              borderRadius: 30,
+                              color: dialogPickerColor,
+                              onSelectFocus: false,
+                              onSelect: () async {
+                                final Color colorBeforeDialog = dialogPickerColor;
+                                if (!await colorPickerDialog(
+                                  context,
+                                  dialogPickerColor,
+                                  ref,
+                                  onColorChanged: (color) {
+                                    widget.track.color = color;
+                                    ref.read(cloudFirestoreProvider.notifier).updateTrack(widget.track);
+                                  },
+                                )) {
+                                  dialogPickerColor = colorBeforeDialog;
+                                }
+                              },
+                            ),
+                            Tooltip(
+                              message: "Público",
+                              child: Icon(Icons.people),
+                            ),
                             Checkbox(
                               value: widget.track.public,
                               onChanged: (value) {
