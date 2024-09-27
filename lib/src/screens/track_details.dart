@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:file_saver/file_saver.dart';
@@ -388,7 +389,7 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
                   onPressed: () async {
                     String trackData = widget.track.toGpx();
                     await FileSaver.instance.saveFile(
-                      bytes: Uint8List.fromList(trackData.codeUnits),
+                      bytes: utf8.encode(trackData),
                       name: widget.track.name,
                       ext: "gpx",
                     );
