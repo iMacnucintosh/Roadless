@@ -15,6 +15,7 @@ import 'package:roadless/src/models/track.dart';
 import 'package:roadless/src/models/waypoint.dart';
 import 'package:roadless/src/providers/cloud_firestore_provider.dart';
 import 'package:roadless/src/providers/color_provider.dart';
+import 'package:roadless/src/providers/google_auth_provider.dart';
 
 class TrackDetailsScreen extends ConsumerStatefulWidget {
   final Track track;
@@ -27,12 +28,11 @@ class TrackDetailsScreen extends ConsumerStatefulWidget {
 class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
   late MapController _mapController;
   late LatLngBounds trackBounds;
-
+  bool canEdit = false;
   @override
   void initState() {
     _mapController = MapController();
     trackBounds = widget.track.getBounds();
-
     super.initState();
   }
 
@@ -40,7 +40,7 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
   Widget build(BuildContext context) {
     Color dialogPickerColor = ref.watch(colorProvider);
     TextEditingController nameController = TextEditingController(text: widget.track.name);
-
+    canEdit = ref.watch(googleUserProvider)!.uid == widget.track.userUid;
     final formKey = GlobalKey<FormState>();
 
     return Scaffold(
@@ -268,6 +268,7 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
                 top: 10,
                 left: 10,
                 child: Card(
+                  color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
                   child: Padding(
                     padding: const EdgeInsets.all(12.0),
                     child: Wrap(
@@ -281,43 +282,45 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
                         Row(
                           children: [
                             InkWell(
-                              onTap: () async {
-                                ActivityType? activityType = await showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                      content: SingleChildScrollView(
-                                        child: Center(
-                                          child: Wrap(
-                                            spacing: 20,
-                                            runSpacing: 20,
-                                            alignment: WrapAlignment.center,
-                                            children: ActivityType.values
-                                                .map(
-                                                  (activityType) => IconButton(
-                                                    tooltip: activityType.label,
-                                                    icon: Icon(
-                                                      activityType.icon,
-                                                      size: 40,
-                                                    ),
-                                                    onPressed: () {
-                                                      Navigator.of(context).pop(activityType);
-                                                    },
-                                                  ),
-                                                )
-                                                .toList(),
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                );
-                                if (activityType != null) {
-                                  widget.track.activityType = activityType;
-                                  ref.read(cloudFirestoreProvider.notifier).updateTrack(widget.track);
-                                  setState(() {});
-                                }
-                              },
+                              onTap: canEdit
+                                  ? () async {
+                                      ActivityType? activityType = await showDialog(
+                                        context: context,
+                                        builder: (BuildContext context) {
+                                          return AlertDialog(
+                                            content: SingleChildScrollView(
+                                              child: Center(
+                                                child: Wrap(
+                                                  spacing: 20,
+                                                  runSpacing: 20,
+                                                  alignment: WrapAlignment.center,
+                                                  children: ActivityType.values
+                                                      .map(
+                                                        (activityType) => IconButton(
+                                                          tooltip: activityType.label,
+                                                          icon: Icon(
+                                                            activityType.icon,
+                                                            size: 40,
+                                                          ),
+                                                          onPressed: () {
+                                                            Navigator.of(context).pop(activityType);
+                                                          },
+                                                        ),
+                                                      )
+                                                      .toList(),
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      );
+                                      if (activityType != null) {
+                                        widget.track.activityType = activityType;
+                                        ref.read(cloudFirestoreProvider.notifier).updateTrack(widget.track);
+                                        setState(() {});
+                                      }
+                                    }
+                                  : null,
                               child: widget.track.activityType == null
                                   ? const Text("Especificar actividad")
                                   : Row(
@@ -361,11 +364,13 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
                             ),
                             Checkbox(
                               value: widget.track.public,
-                              onChanged: (value) {
-                                widget.track.public = value!;
-                                ref.read(cloudFirestoreProvider.notifier).updateTrack(widget.track);
-                                setState(() {});
-                              },
+                              onChanged: canEdit
+                                  ? (value) {
+                                      widget.track.public = value!;
+                                      ref.read(cloudFirestoreProvider.notifier).updateTrack(widget.track);
+                                      setState(() {});
+                                    }
+                                  : null,
                             ),
                           ],
                         )
@@ -378,7 +383,7 @@ class TrackDetailsScreenState extends ConsumerState<TrackDetailsScreen> {
                 top: 10,
                 right: 10,
                 child: FloatingActionButton(
-                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  backgroundColor: Theme.of(context).colorScheme.surface.withOpacity(0.8),
                   tooltip: "Exportar GPX",
                   onPressed: () async {
                     String trackData = widget.track.toGpx();

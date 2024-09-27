@@ -9,6 +9,7 @@ import 'package:roadless/src/models/waypoint.dart';
 class Track {
   Track({
     required this.id,
+    required this.userUid,
     required this.name,
     required this.locations,
     this.waypoints = const [],
@@ -19,6 +20,7 @@ class Track {
   });
 
   String id;
+  String userUid;
   String name;
   List<Location> locations;
   List<Waypoint> waypoints;
@@ -71,6 +73,7 @@ class Track {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'user_uid': userUid,
       'name': name,
       'points': locations.map((location) => location.toJson()).toList(),
       'waypoints': waypoints.map((waypoint) => waypoint.toJson()).toList(),
@@ -84,6 +87,7 @@ class Track {
   factory Track.fromJson(Map<String, dynamic> json) {
     return Track(
       id: json['id'],
+      userUid: json['user_uid'],
       name: json['name'],
       locations: [...json['points'].map((e) => Location.fromJson(e))],
       waypoints: [...json['waypoints'].map((e) => Waypoint.fromJson(e))],

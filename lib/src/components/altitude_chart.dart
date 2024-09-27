@@ -22,6 +22,7 @@ class AltitudeChartState extends State<AltitudeChart> {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
       child: Container(
         constraints: BoxConstraints(maxWidth: 500),
         child: Column(
@@ -91,7 +92,7 @@ class AltitudeChartState extends State<AltitudeChart> {
                             dotData: FlDotData(show: false),
                             belowBarData: BarAreaData(
                               show: true,
-                              color: Theme.of(context).colorScheme.surfaceContainerHigh,
+                              color: Theme.of(context).colorScheme.surface,
                             ),
                           ),
                         ],

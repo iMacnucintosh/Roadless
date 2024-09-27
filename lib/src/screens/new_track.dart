@@ -52,6 +52,7 @@ class NewTrackScreenState extends ConsumerState<NewTrackScreen> {
     final isLoading = ref.watch(isLoadingProvider);
 
     return Scaffold(
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
       appBar: AppBar(
         title: const Text('Nuevo track'),
       ),
@@ -287,6 +288,7 @@ class NewTrackScreenState extends ConsumerState<NewTrackScreen> {
             ref.read(isLoadingProvider.notifier).state = true;
             final track = Track(
               id: const Uuid().v4(),
+              userUid: ref.watch(googleUserProvider)!.uid,
               name: nameController.text,
               locations: locations,
               waypoints: getTrackwaypoints(widget.trackData),
@@ -307,6 +309,8 @@ class NewTrackScreenState extends ConsumerState<NewTrackScreen> {
                 DocumentReference trackDocRef = tracksRef.doc(track.id);
 
                 await trackDocRef.set(track.toJson());
+
+                // TODO: Añadir a public tracks si la subimos publica
               } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text("No se ha podido guardar el track en la nube: $e")),

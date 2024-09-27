@@ -21,6 +21,14 @@ class CloudFirestoreNotifier extends StateNotifier<FirebaseFirestore> {
         tracks.add(track);
       }
     }
+    QuerySnapshot publicTracks = await state.collection("public_tracks").get();
+    for (var publicTrackDoc in publicTracks.docs) {
+      Map<String, dynamic> trackData = publicTrackDoc.data() as Map<String, dynamic>;
+      Track track = Track.fromJson(trackData);
+      // Añademe el track a tracks solo si aun no esta en tracks
+      if (!tracks.any((element) => element.id == track.id)) tracks.add(track);
+    }
+
     return tracks;
   }
 
@@ -36,6 +44,15 @@ class CloudFirestoreNotifier extends StateNotifier<FirebaseFirestore> {
     if (user != null) {
       scaffoldMessengerKey.currentState?.showSnackBar(SnackBar(content: LinearProgressIndicator()));
       await state.collection("users").doc(user.uid).collection("tracks").doc(track.id).update(track.toJson());
+
+      if (track.public) {
+        CollectionReference tracksRef = state.collection('public_tracks');
+        DocumentReference trackDocRef = tracksRef.doc(track.id);
+        await trackDocRef.set(track.toJson());
+      } else {
+        await state.collection("public_tracks").doc(track.id).delete();
+      }
+
       scaffoldMessengerKey.currentState?.showSnackBar(SnackBar(content: Text("Track actualizado")));
     }
   }
