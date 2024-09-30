@@ -72,9 +72,10 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                                         child: Image.network(user.photoURL ?? ""),
                                       ),
                                       const SizedBox(height: 20),
-                                      Text(user.email ?? "", style: Theme.of(context).textTheme.bodyLarge),
+                                      Text(user.email ?? "", style: Theme.of(context).textTheme.bodyMedium),
                                     ],
                                   ),
+                                  SizedBox(height: 20),
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
@@ -97,7 +98,15 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                         },
                       );
                     },
-                    child: Text(user.displayName!),
+                    child: user.photoURL != null
+                        ? Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(50.0),
+                              child: Image.network(user.photoURL ?? ""),
+                            ),
+                          )
+                        : Icon(Icons.account_circle_outlined),
                   ),
                 ),
               ],
