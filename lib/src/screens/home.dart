@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
@@ -15,6 +17,7 @@ import 'package:roadless/src/providers/tracks_provider.dart';
 import 'package:roadless/src/screens/track_details.dart';
 import 'package:roadless/src/screens/new_track.dart';
 import 'package:roadless/src/Utils/utils.dart';
+import 'package:animated_notch_bottom_bar/animated_notch_bottom_bar/animated_notch_bottom_bar.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -24,8 +27,27 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class HomeScreenState extends ConsumerState<HomeScreen> {
+  final _pageController = PageController(initialPage: 0);
+
+  final NotchBottomBarController _controller = NotchBottomBarController(index: 1);
+
+  int maxCount = 3;
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final List<Widget> bottomBarPages = [
+      HomeScreen(),
+      HomeScreen(),
+      HomeScreen(),
+    ];
+
     restoreGoogleSession(ref);
     final tracks = ref.watch(filteredTracksByActivityProvider);
 
@@ -354,6 +376,73 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
               ],
             ),
+            bottomNavigationBar: (bottomBarPages.length <= maxCount)
+                ? LayoutBuilder(builder: (context, constraints) {
+                    return AnimatedNotchBottomBar(
+                      notchBottomBarController: _controller,
+                      color: Theme.of(context).colorScheme.surface,
+                      showLabel: true,
+                      textOverflow: TextOverflow.visible,
+                      maxLine: 1,
+                      shadowElevation: 1,
+                      kBottomRadius: 28.0,
+                      notchColor: Theme.of(context).colorScheme.primary,
+                      removeMargins: false,
+                      bottomBarWidth: constraints.maxWidth,
+                      showShadow: true,
+                      durationInMilliSeconds: 100,
+                      itemLabelStyle: Theme.of(context).textTheme.labelSmall!.copyWith(fontSize: 10, fontWeight: FontWeight.bold),
+                      elevation: 1,
+                      bottomBarItems: [
+                        BottomBarItem(
+                          inActiveItem: Icon(Icons.list_outlined, color: Colors.blueGrey),
+                          activeItem: Icon(
+                            Icons.list,
+                            color: Theme.of(context).colorScheme.surface,
+                          ),
+                          itemLabel: 'Mis listas',
+                        ),
+                        BottomBarItem(
+                          inActiveItem: Icon(
+                            Icons.home_filled,
+                            color: Colors.blueGrey,
+                          ),
+                          activeItem: Icon(
+                            Icons.home_filled,
+                            color: Theme.of(context).colorScheme.surface,
+                          ),
+                          itemLabel: 'Inicio',
+                        ),
+                        BottomBarItem(
+                          inActiveItem: Icon(
+                            Icons.person,
+                            color: Colors.blueGrey,
+                          ),
+                          activeItem: Icon(
+                            Icons.person,
+                            color: Theme.of(context).colorScheme.surface,
+                          ),
+                          itemLabel: 'Comunidad',
+                        ),
+                        // BottomBarItem(
+                        //   inActiveItem: Icon(
+                        //     Icons.settings,
+                        //     color: Colors.blueGrey,
+                        //   ),
+                        //   activeItem: Icon(
+                        //     Icons.settings,
+                        //     color: Theme.of(context).colorScheme.surface,
+                        //   ),
+                        //   itemLabel: 'Ajustes',
+                        // ),
+                      ],
+                      onTap: (index) {
+                        _pageController.jumpToPage(index);
+                      },
+                      kIconSize: 24.0,
+                    );
+                  })
+                : null,
             floatingActionButton: FloatingActionButton(
               tooltip: "Añadir track",
               onPressed: () async {
