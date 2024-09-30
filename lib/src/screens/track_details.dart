@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:file_saver/file_saver.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
