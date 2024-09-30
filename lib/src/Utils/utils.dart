@@ -1,13 +1,17 @@
 import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
-import 'dart:ui';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flex_color_picker/flex_color_picker.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gpx/gpx.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:roadless/src/models/location.dart';
 import 'package:roadless/src/models/waypoint.dart';
+import 'package:roadless/src/providers/color_provider.dart';
 
 Future<Uint8List?> pickFile() async {
   FilePickerResult? result = await FilePicker.platform.pickFiles(withData: true);
@@ -26,18 +30,23 @@ Future<String?> loadTrackData() async {
   return null;
 }
 
-List<LatLng> getTrackPoints(String trackData) {
-  List<LatLng> trackPoints = [];
-  List<Wpt> points = [];
+List<Location> getTrackPoints(String trackData) {
+  List<Location> trackPoints = [];
+  List<Wpt> wpts = [];
   Gpx track = GpxReader().fromString(trackData);
   if (track.rtes.isNotEmpty) {
-    points = track.rtes.first.rtepts;
+    wpts = track.rtes.first.rtepts;
   } else if (track.trks.isNotEmpty) {
-    points = track.trks.first.trksegs.first.trkpts;
+    wpts = track.trks.first.trksegs.first.trkpts;
   }
 
-  for (Wpt point in points) {
-    trackPoints.add(LatLng(point.lat!, point.lon!));
+  for (Wpt location in wpts) {
+    trackPoints.add(
+      Location(
+        latLng: LatLng(location.lat!, location.lon!),
+        elevation: location.ele ?? 0,
+      ),
+    );
   }
 
   return trackPoints;
@@ -47,8 +56,16 @@ List<Waypoint> getTrackwaypoints(String trackData) {
   List<Waypoint> waypoints = [];
   Gpx track = GpxReader().fromString(trackData);
 
-  for (Wpt point in track.wpts) {
-    waypoints.add(Waypoint(name: point.name ?? "", description: point.desc ?? "", location: LatLng(point.lat!, point.lon!)));
+  for (Wpt wpt in track.wpts) {
+    waypoints.add(
+      Waypoint(
+        name: wpt.name ?? "",
+        location: Location(
+          latLng: LatLng(wpt.lat!, wpt.lon!),
+          elevation: wpt.ele ?? 0,
+        ),
+      ),
+    );
   }
 
   return waypoints;
@@ -64,17 +81,17 @@ String getTrackName(String trackData) {
 }
 
 LatLngBounds getBoundsFromTrackData(String trackData) {
-  List<LatLng> points = getTrackPoints(trackData);
+  List<Location> locations = getTrackPoints(trackData);
   double minLat = double.infinity;
   double minLng = double.infinity;
   double maxLat = double.negativeInfinity;
   double maxLng = double.negativeInfinity;
 
-  for (final point in points) {
-    minLat = min(minLat, point.latitude);
-    minLng = min(minLng, point.longitude);
-    maxLat = max(maxLat, point.latitude);
-    maxLng = max(maxLng, point.longitude);
+  for (final location in locations) {
+    minLat = min(minLat, location.latLng.latitude);
+    minLng = min(minLng, location.latLng.longitude);
+    maxLat = max(maxLat, location.latLng.latitude);
+    maxLng = max(maxLng, location.latLng.longitude);
   }
 
   return LatLngBounds(LatLng(minLat, minLng), LatLng(maxLat, maxLng));
@@ -85,18 +102,16 @@ double fitBoundsFromTrackData(LatLngBounds bounds, Size containerSize) {
     return log(x) / log(2);
   }
 
-  double minDimension(Size size) {
-    return size.width < size.height ? size.width : size.height;
-  }
-
   double width = bounds.northEast.longitude - bounds.southWest.longitude;
   double height = bounds.northEast.latitude - bounds.southWest.latitude;
 
-  Size size = Size(width, height);
-  final aspectRatio = containerSize.width / containerSize.height;
-  final offset = size.height * (containerSize.aspectRatio - aspectRatio) / 2;
+  double boundsAspectRatio = width / height;
 
-  double zoom = log2(minDimension(containerSize) / (size.width + 2 * offset)) + 0.001;
+  double containerAspectRatio = containerSize.width / containerSize.height;
+
+  double scale = containerAspectRatio > boundsAspectRatio ? containerSize.height / height : containerSize.width / width;
+
+  double zoom = log2(scale) - 0.100;
 
   if (zoom < 0) {
     zoom = 0;
@@ -129,4 +144,66 @@ double calculateTrackDistance(List<LatLng> points) {
 
 double _toRadians(double degrees) {
   return degrees * (pi / 180);
+}
+
+Future<bool> colorPickerDialog(BuildContext context, Color dialogPickerColor, WidgetRef ref, {Function? onColorChanged}) async {
+  return ColorPicker(
+    color: dialogPickerColor,
+    onColorChanged: (Color color) {
+      dialogPickerColor = color;
+      ref.read(colorProvider.notifier).update((state) => color);
+      if (onColorChanged != null) onColorChanged(color);
+    },
+    width: 40,
+    height: 40,
+    borderRadius: 4,
+    spacing: 5,
+    runSpacing: 5,
+    wheelDiameter: 155,
+    pickerTypeLabels: const {
+      ColorPickerType.primary: "Primarios",
+      ColorPickerType.accent: "Acento",
+      ColorPickerType.wheel: "Selector",
+    },
+    pickerTypeTextStyle: Theme.of(context).textTheme.labelLarge,
+    actionButtons: const ColorPickerActionButtons(
+      dialogOkButtonLabel: "Aceptar",
+      dialogCancelButtonLabel: "Cancelar",
+    ),
+    heading: Text(
+      'Selecciona un Color',
+      style: Theme.of(context).textTheme.titleMedium,
+    ),
+    subheading: Text(
+      'Puedes seleccionar una variante',
+      style: Theme.of(context).textTheme.titleMedium,
+    ),
+    wheelSubheading: Text(
+      'Selecciona un color y su variante',
+      style: Theme.of(context).textTheme.titleMedium,
+    ),
+    showMaterialName: true,
+    showColorName: true,
+    showColorCode: true,
+    copyPasteBehavior: const ColorPickerCopyPasteBehavior(
+      longPressMenu: true,
+    ),
+    materialNameTextStyle: Theme.of(context).textTheme.bodySmall,
+    colorNameTextStyle: Theme.of(context).textTheme.bodySmall,
+    colorCodeTextStyle: Theme.of(context).textTheme.bodyMedium,
+    colorCodePrefixStyle: Theme.of(context).textTheme.bodySmall,
+    selectedPickerTypeColor: Theme.of(context).colorScheme.primary,
+    pickersEnabled: const <ColorPickerType, bool>{
+      ColorPickerType.both: false,
+      ColorPickerType.primary: true,
+      ColorPickerType.accent: true,
+      ColorPickerType.bw: false,
+      ColorPickerType.custom: true,
+      ColorPickerType.wheel: true,
+    },
+  ).showPickerDialog(
+    context,
+    actionsPadding: const EdgeInsets.all(16),
+    constraints: const BoxConstraints(minHeight: 480, minWidth: 300, maxWidth: 320),
+  );
 }

@@ -1,5 +1,5 @@
 name: roadless
-description: A new Flutter project.
+description: Organiza tus rutas
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
@@ -38,16 +38,19 @@ dependencies:
   shared_preferences: ^2.3.2
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
-  uuid: ^4.5.0
+  uuid: ^4.5.1
   gpx: ^2.2.2
   file_picker: ^8.1.2
-  flex_color_picker: ^3.5.1
-  firebase_core: ^3.4.1
-  firebase_auth: ^5.2.1
+  file_saver: ^0.2.14
+  flex_color_picker: ^3.6.0
+  firebase_core: ^3.6.0
+  firebase_auth: ^5.3.1
   google_sign_in: ^6.2.1
   logging: ^1.2.0
   logger: ^2.4.0
-  cloud_firestore: ^5.4.1
+  cloud_firestore: ^5.4.3
+  flutter_map_cancellable_tile_provider: ^3.0.2
+  fl_chart: ^0.69.0
 
 dev_dependencies:
   flutter_test:
@@ -58,7 +61,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -71,4 +74,6 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
+  assets:
+    - assets/icon/icon.png
+    - assets/icon/google_icon.png

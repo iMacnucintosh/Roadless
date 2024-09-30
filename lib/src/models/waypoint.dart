@@ -1,23 +1,17 @@
-import 'package:flutter/material.dart';
-import 'package:latlong2/latlong.dart';
+import 'package:roadless/src/models/location.dart';
 
 class Waypoint {
   Waypoint({
     required this.name,
-    required this.description,
     required this.location,
-    this.icon = Icons.location_pin,
   });
 
-  final String name;
-  final String description;
-  final LatLng location;
-  final IconData icon;
+  String name;
+  Location location;
 
   Map<String, dynamic> toJson() {
     return {
       "name": name,
-      "description": description,
       "location": location.toJson(),
     };
   }
@@ -25,8 +19,7 @@ class Waypoint {
   factory Waypoint.fromJson(Map<String, dynamic> json) {
     return Waypoint(
       name: json["name"],
-      description: json["description"],
-      location: LatLng.fromJson(json["location"]),
+      location: Location.fromJson(json["location"]),
     );
   }
 }

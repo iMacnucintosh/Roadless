@@ -8,6 +8,8 @@ import 'package:roadless/src/providers/shared_preferences_provider.dart';
 import 'package:roadless/src/providers/theme_provider.dart';
 import 'package:roadless/src/screens/home.dart';
 
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -34,8 +36,10 @@ class Roadless extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: lightTheme,
       darkTheme: darkTheme,
+      // themeMode: MediaQuery.platformBrightnessOf(context) == Brightness.dark ? ThemeMode.dark : ThemeMode.light,
       themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
       home: const HomeScreen(),
+      scaffoldMessengerKey: scaffoldMessengerKey,
     );
   }
 }

@@ -25,7 +25,7 @@ Future<UserCredential> signInWithGoogle(WidgetRef ref) async {
     // Actualizar el estado del provider
     ref.read(googleUserProvider.notifier).state = userCredential.user;
 
-    ref.read(tracksProvider.notifier).getRulesFromFirestore();
+    ref.read(tracksProvider.notifier).getTracksFromFirestore();
 
     return userCredential;
   } else {
@@ -46,7 +46,7 @@ Future<UserCredential> signInWithGoogle(WidgetRef ref) async {
       // Actualizar el estado del provider
       ref.read(googleUserProvider.notifier).state = userCredential.user;
 
-      ref.read(tracksProvider.notifier).getRulesFromFirestore();
+      ref.read(tracksProvider.notifier).getTracksFromFirestore();
       return userCredential;
     } else {
       throw 'Google sign-in cancelled';
