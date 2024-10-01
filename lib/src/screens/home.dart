@@ -357,7 +357,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
               ],
             ),
             bottomNavigationBar: Padding(
-              padding: EdgeInsets.fromLTRB(8.0, 0.0, 16.0, 8.0),
+              padding: EdgeInsets.fromLTRB(8.0, 0.0, 24.0, 8.0),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: SalomonBottomBar(
@@ -423,25 +423,41 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
                 onTap: () async {
                   signInWithGoogle(ref);
                 },
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(32),
-                    border: Border.all(color: Colors.grey),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 32.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      Image.asset(
-                        'assets/icon/google_icon.png',
-                        height: 64.0,
-                        width: 64.0,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text("Roadless", style: Theme.of(context).textTheme.titleLarge!.copyWith(fontWeight: FontWeight.bold, fontSize: 32)),
+                          Text("by Manuel López", style: Theme.of(context).textTheme.titleSmall!.copyWith(color: Colors.grey)),
+                        ],
                       ),
-                      SizedBox(width: 10.0),
-                      Text(
-                        "Inicia sesión con Google",
-                        style: Theme.of(context).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold),
+                      SizedBox(height: 400, child: Image.asset("assets/images/biker.jpg", width: 256.0)),
+                      Container(
+                        padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(32),
+                          border: Border.all(color: Colors.grey),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Image.asset(
+                              'assets/icon/google_icon.png',
+                              height: 64.0,
+                              width: 64.0,
+                            ),
+                            SizedBox(width: 10.0),
+                            Text(
+                              "Inicia sesión con Google",
+                              style: Theme.of(context).textTheme.titleMedium!.copyWith(fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
