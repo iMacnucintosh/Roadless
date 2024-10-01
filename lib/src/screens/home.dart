@@ -357,7 +357,7 @@ class HomeScreenState extends ConsumerState<HomeScreen> {
               ],
             ),
             bottomNavigationBar: Padding(
-              padding: EdgeInsets.fromLTRB(8.0, 0.0, 24.0, 8.0),
+              padding: EdgeInsets.fromLTRB(8.0, 0.0, 8.0, 24.0),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: SalomonBottomBar(
