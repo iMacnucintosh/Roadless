@@ -7,6 +7,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:roadless/src/Utils/logger.dart';
+import 'package:roadless/src/components/app_bar.dart';
 import 'package:roadless/src/components/input_field.dart';
 import 'package:roadless/src/constants/enums.dart';
 import 'package:roadless/src/models/location.dart';
@@ -19,15 +20,15 @@ import 'package:roadless/src/providers/tracks_provider.dart';
 import 'package:roadless/src/Utils/utils.dart';
 import 'package:uuid/uuid.dart';
 
-class NewTrackScreen extends ConsumerStatefulWidget {
-  const NewTrackScreen({super.key, required this.trackData});
+class AddTrackScreen extends ConsumerStatefulWidget {
+  const AddTrackScreen({super.key, required this.trackData});
   final String trackData;
 
   @override
-  NewTrackScreenState createState() => NewTrackScreenState();
+  AddTrackScreenState createState() => AddTrackScreenState();
 }
 
-class NewTrackScreenState extends ConsumerState<NewTrackScreen> {
+class AddTrackScreenState extends ConsumerState<AddTrackScreen> {
   ActivityType? selectedActivityType;
 
   late Color dialogPickerColor;
@@ -53,9 +54,7 @@ class NewTrackScreenState extends ConsumerState<NewTrackScreen> {
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
-      appBar: AppBar(
-        title: const Text('Nuevo track'),
-      ),
+      appBar: RoadlessAppBar(title: "Nuevo track"),
       body: Stack(
         children: [
           Padding(

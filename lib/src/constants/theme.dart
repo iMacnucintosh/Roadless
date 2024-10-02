@@ -11,9 +11,15 @@ ThemeData lightTheme = ThemeData(
   colorScheme: lightColorScheme,
   useMaterial3: true,
   textTheme: GoogleFonts.nunitoTextTheme(),
-  segmentedButtonTheme: const SegmentedButtonThemeData(
+  segmentedButtonTheme: SegmentedButtonThemeData(
     style: ButtonStyle(
       padding: WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 10.0)),
+      backgroundColor: WidgetStateColor.resolveWith((states) {
+        return states.contains(WidgetState.selected) ? lightColorScheme.primary : lightColorScheme.surface;
+      }),
+      foregroundColor: WidgetStateColor.resolveWith((states) {
+        return states.contains(WidgetState.selected) ? lightColorScheme.surface : lightColorScheme.scrim;
+      }),
     ),
   ),
   inputDecorationTheme: InputDecorationTheme(
@@ -31,6 +37,17 @@ ThemeData darkTheme = lightTheme.copyWith(
   colorScheme: darkColorScheme,
   textTheme: GoogleFonts.nunitoTextTheme(ThemeData.dark().textTheme),
   iconTheme: const IconThemeData(color: Colors.white),
+  segmentedButtonTheme: SegmentedButtonThemeData(
+    style: ButtonStyle(
+      padding: WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 10.0)),
+      backgroundColor: WidgetStateColor.resolveWith((states) {
+        return states.contains(WidgetState.selected) ? darkColorScheme.primary : darkColorScheme.surface;
+      }),
+      foregroundColor: WidgetStateColor.resolveWith((states) {
+        return states.contains(WidgetState.selected) ? darkColorScheme.surface : darkColorScheme.secondary;
+      }),
+    ),
+  ),
 );
 
 OutlineInputBorder _buildInputBorder(Color color) {
