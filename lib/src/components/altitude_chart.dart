@@ -17,7 +17,7 @@ class AltitudeChart extends StatefulWidget {
 }
 
 class AltitudeChartState extends State<AltitudeChart> {
-  bool _isExpanded = true;
+  bool _isExpanded = false;
 
   @override
   Widget build(BuildContext context) {

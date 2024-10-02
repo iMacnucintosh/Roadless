@@ -9,12 +9,17 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gpx/gpx.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:roadless/main.dart';
 import 'package:roadless/src/models/location.dart';
 import 'package:roadless/src/models/waypoint.dart';
 import 'package:roadless/src/providers/color_provider.dart';
 
 Future<Uint8List?> pickFile() async {
-  FilePickerResult? result = await FilePicker.platform.pickFiles(withData: true);
+  FilePickerResult? result = await FilePicker.platform.pickFiles(
+    withData: true,
+    allowedExtensions: ['gpx'],
+    type: FileType.custom,
+  );
   if (result != null) {
     return result.files.first.bytes;
   } else {
@@ -25,7 +30,14 @@ Future<Uint8List?> pickFile() async {
 Future<String?> loadTrackData() async {
   Uint8List? trackFile = await pickFile();
   if (trackFile != null) {
-    return utf8.decode(trackFile);
+    try {
+      return utf8.decode(trackFile);
+    } catch (e) {
+      scaffoldMessengerKey.currentState?.showSnackBar(SnackBar(
+        content: Text("Error al cargar el archivo. Pruebe con otro."),
+        backgroundColor: Colors.red,
+      ));
+    }
   }
   return null;
 }

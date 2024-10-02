@@ -15,8 +15,8 @@ class AppScaffold extends ConsumerWidget {
     bool isPortraitMode = MediaQuery.orientationOf(context) == Orientation.portrait;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
       appBar: RoadlessAppBar(title: "Roadless"),
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
       body: Stack(
         children: [
           Padding(

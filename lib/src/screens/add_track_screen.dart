@@ -7,7 +7,6 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:roadless/src/Utils/logger.dart';
-import 'package:roadless/src/components/app_bar.dart';
 import 'package:roadless/src/components/input_field.dart';
 import 'package:roadless/src/constants/enums.dart';
 import 'package:roadless/src/models/location.dart';
@@ -50,12 +49,9 @@ class AddTrackScreenState extends ConsumerState<AddTrackScreen> {
   @override
   Widget build(BuildContext context) {
     dialogPickerColor = ref.watch(colorProvider);
-    final isLoading = ref.watch(isLoadingProvider);
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
-      appBar: RoadlessAppBar(title: "Nuevo track"),
-      body: Stack(
+    return SingleChildScrollView(
+      child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -171,7 +167,7 @@ class AddTrackScreenState extends ConsumerState<AddTrackScreen> {
                       const SizedBox(height: 16),
                       SizedBox(
                         width: constraints.maxWidth,
-                        height: constraints.maxHeight / 2,
+                        height: 500,
                         child: ClipRRect(
                           borderRadius: const BorderRadius.all(Radius.circular(12)),
                           child: FlutterMap(
@@ -259,70 +255,58 @@ class AddTrackScreenState extends ConsumerState<AddTrackScreen> {
               ),
             ),
           ),
-          if (isLoading)
-            Positioned.fill(
-              child: Container(
-                color: Colors.black.withOpacity(0.4),
-                child: const Center(
-                  child: Card(
-                    child: SizedBox(
-                      width: 300,
-                      height: 150,
-                      child: Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                    ),
-                  ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              FilledButton(
+                onPressed: () async {
+                  if (formKey.currentState!.validate()) {
+                    ref.read(isLoadingProvider.notifier).state = true;
+                    final track = Track(
+                      id: const Uuid().v4(),
+                      userUid: ref.watch(googleUserProvider)!.uid,
+                      name: nameController.text,
+                      locations: locations,
+                      waypoints: getTrackwaypoints(widget.trackData),
+                      color: dialogPickerColor,
+                      distance: calculateTrackDistance(locations.map((e) => e.latLng).toList()),
+                      activityType: selectedActivityType,
+                    );
+
+                    ref.read(tracksProvider.notifier).addTrack(track);
+
+                    final firestore = ref.watch(cloudFirestoreProvider);
+                    final user = ref.watch(googleUserProvider);
+
+                    if (user != null) {
+                      try {
+                        CollectionReference tracksRef = firestore.collection('users').doc(user.uid).collection('tracks');
+
+                        DocumentReference trackDocRef = tracksRef.doc(track.id);
+
+                        await trackDocRef.set(track.toJson());
+
+                        // TODO: Añadir a public tracks si la subimos publica
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("No se ha podido guardar el track en la nube: $e")),
+                        );
+
+                        logger.e(e);
+                      }
+                    }
+                    ref.read(isLoadingProvider.notifier).state = false;
+                    Navigator.pop(context);
+                  }
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text("Añadir track"),
                 ),
               ),
-            ),
+            ],
+          ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        tooltip: "Añadir track",
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
-        onPressed: () async {
-          if (formKey.currentState!.validate()) {
-            ref.read(isLoadingProvider.notifier).state = true;
-            final track = Track(
-              id: const Uuid().v4(),
-              userUid: ref.watch(googleUserProvider)!.uid,
-              name: nameController.text,
-              locations: locations,
-              waypoints: getTrackwaypoints(widget.trackData),
-              color: dialogPickerColor,
-              distance: calculateTrackDistance(locations.map((e) => e.latLng).toList()),
-              activityType: selectedActivityType,
-            );
-
-            ref.read(tracksProvider.notifier).addTrack(track);
-
-            final firestore = ref.watch(cloudFirestoreProvider);
-            final user = ref.watch(googleUserProvider);
-
-            if (user != null) {
-              try {
-                CollectionReference tracksRef = firestore.collection('users').doc(user.uid).collection('tracks');
-
-                DocumentReference trackDocRef = tracksRef.doc(track.id);
-
-                await trackDocRef.set(track.toJson());
-
-                // TODO: Añadir a public tracks si la subimos publica
-              } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("No se ha podido guardar el track en la nube: $e")),
-                );
-
-                logger.e(e);
-              }
-            }
-            ref.read(isLoadingProvider.notifier).state = false;
-            Navigator.pop(context);
-          }
-        },
-        child: const Icon(Icons.save),
       ),
     );
   }

@@ -8,7 +8,7 @@ class LeftNavigationBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Positioned(
-      left: 0,
+      left: 10,
       top: 10,
       bottom: 10,
       child: Card(
