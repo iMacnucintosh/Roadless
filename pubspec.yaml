@@ -52,6 +52,7 @@ dependencies:
   flutter_map_cancellable_tile_provider: ^3.0.2
   fl_chart: ^0.69.0
   salomon_bottom_bar: ^3.3.2
+  flutter_map_location_marker: ^9.1.1
 
 dev_dependencies:
   flutter_test:

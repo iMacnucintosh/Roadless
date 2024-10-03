@@ -27,11 +27,17 @@ class LeftNavigationBar extends ConsumerWidget {
                 index: 0,
               ),
               LeftMenuIcon(
-                icon: Icon(Icons.list_outlined),
-                activeIcon: Icon(Icons.list),
+                icon: Icon(Icons.explore_outlined),
+                activeIcon: Icon(Icons.explore),
                 selectedColor: Colors.orange,
                 index: 1,
               ),
+              // LeftMenuIcon(
+              //   icon: Icon(Icons.list_outlined),
+              //   activeIcon: Icon(Icons.list),
+              //   selectedColor: Colors.orange,
+              //   index: 1,
+              // ),
               LeftMenuIcon(
                 icon: Icon(Icons.favorite_border),
                 activeIcon: Icon(Icons.favorite),

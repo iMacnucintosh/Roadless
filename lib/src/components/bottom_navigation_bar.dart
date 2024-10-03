@@ -24,10 +24,16 @@ class RoadlessBottomNavigationBar extends ConsumerWidget {
               title: Text("Inicio"),
               selectedColor: Theme.of(context).colorScheme.primary,
             ),
+            // SalomonBottomBarItem(
+            //   icon: Icon(Icons.list_outlined),
+            //   activeIcon: Icon(Icons.list),
+            //   title: Text("Listas"),
+            //   selectedColor: Colors.orange,
+            // ),
             SalomonBottomBarItem(
-              icon: Icon(Icons.list_outlined),
-              activeIcon: Icon(Icons.list),
-              title: Text("Listas"),
+              icon: Icon(Icons.explore_outlined),
+              activeIcon: Icon(Icons.explore),
+              title: Text("Explorar"),
               selectedColor: Colors.orange,
             ),
             SalomonBottomBarItem(

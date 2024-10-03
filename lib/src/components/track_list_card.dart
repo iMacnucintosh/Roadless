@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_map_cancellable_tile_provider/flutter_map_cancellable_tile_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:roadless/src/Utils/logger.dart';
 import 'package:roadless/src/Utils/utils.dart';
 import 'package:roadless/src/components/public_tracks_marker.dart';
 import 'package:roadless/src/models/track.dart';
@@ -49,7 +50,7 @@ class TrackListCard extends ConsumerWidget {
                     ),
                   ),
                 ).then((value) {
-                  print("Ver si recargar estado");
+                  logger.i("Ver si recargar estado");
                 });
               },
               child: Row(
